@@ -1,4 +1,4 @@
-#include "qot_receiver.h"
+#include "../../include/ui_rotk/receiver_uirotk.h"
 #include <stdlib.h>
 //#include <process.h>
 #include <string.h>
@@ -29,7 +29,7 @@ void receiver_okd (OKDOT_RECEIVER * r)
 	//printf("Bob Oblivious Key path: %s\n", bobOKPath);
 
 
-	if ((receiverfile = fopen("keys/receiver_rotk.txt","r")))
+	if ((receiverfile = fopen("../keys/receiver_uirotk.txt","r")))
 	{
 		for(int j = 0; j < 4; j++)
 		{// skip first 4 lines

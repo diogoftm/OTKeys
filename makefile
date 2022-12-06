@@ -2,20 +2,20 @@ CC = /usr/bin/gcc
 CFLAGS = -g -O3 -Wall -Wextra
 AS = $(CC) $(CFLAGS) -c
 
-OBJS = qot_sender.o qot_receiver.o main.o
-DEPS = qot_sender.h qot_receiver.h
+OBJS_UIROTK = obj/sender_uirotk.o obj/receiver_uirotk.o obj/main_uirotk.o
+DEPS_UIROTK = include/ui_rotk/sender_uirotk.h include/ui_rotk/receiver_uirotk.h
 
 ###################################################
 
-all: ot_test libqokdot
+all: uirotk_test libuirotk
 
-libqokdot: $(OBJS)
-	$(AR) -crs libqokdot.a $(OBJS)
+libuirotk: $(OBJS_UIROTK)
+	$(AR) -crs lib/libuirotk.a $(OBJS_UIROTK)
 
-ot_test: $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $^
+uirotk_test: $(OBJS_UIROTK)
+	$(CC) $(CFLAGS) -o bin/$@ $^
 
-%.o: %.c $(DEPS)
+obj/%_uirotk.o: src/ui_rotk/%_uirotk.c $(DEPS_UIROTK)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 ###################################################
@@ -23,6 +23,6 @@ ot_test: $(OBJS)
 .PHONY: clean
 
 clean:
-	-rm -f main_exe
-	-rm -f *.o
-	-rm -f libqokdot.a
+	-rm -f bin/uirotk_test
+	-rm -f obj/*.o
+	-rm -f lib/libuirotk.a

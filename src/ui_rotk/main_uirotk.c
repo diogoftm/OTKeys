@@ -1,5 +1,5 @@
-#include "qot_receiver.h"
-#include "qot_sender.h"
+#include "../../include/ui_rotk/receiver_uirotk.h"
+#include "../../include/ui_rotk/sender_uirotk.h"
 
 int main()
 {

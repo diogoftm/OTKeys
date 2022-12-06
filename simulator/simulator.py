@@ -62,7 +62,7 @@ def uns_int_rotk(keysize : int, numkey : int) -> None:
     sender_keys, receiver_keys = gen_rotkeys_list(keysize, numkey)
     
     ## Generate sender's file
-    f_sender = open("../keys/sender_rotk.txt", "w")
+    f_sender = open("../keys/sender_uirotk.txt", "w")
     # print header
     h_sender = header("sender", keysize, numkey)
     f_sender.write(h_sender)
@@ -74,7 +74,7 @@ def uns_int_rotk(keysize : int, numkey : int) -> None:
     f_sender.close()
 
     ## Generate receiver's file
-    f_receiver = open("../keys/receiver_rotk.txt", "w")
+    f_receiver = open("../keys/receiver_uirotk.txt", "w")
     # print header
     h_receiver = header("receiver", keysize, numkey)
     f_receiver.write(h_receiver)
@@ -95,12 +95,12 @@ def main(keysize : int, numkey : int, typekey : int=0) -> int:
     if keysize % 2 != 0:
         raise ValueError("The argument ::keysize:: must be even")
 
-    uns_int_rotkeys = 0
+    unsint_rotkeys = 0
     bin_rotkeys = 1
-    uns_int_okeys = 2
+    unsint_okeys = 2
     bin_okeys = 3
 
-    if typekey == uns_int_rotkeys:
+    if typekey == unsint_rotkeys:
         print("Generating Random OT keys.")
         uns_int_rotk(keysize, numkey)
         print("Random OT keys generated and saved to this current folder.")
@@ -108,7 +108,7 @@ def main(keysize : int, numkey : int, typekey : int=0) -> int:
     elif typekey == bin_rotkeys:
         print("Method not available. Coming soon.")
         return 0
-    elif typekey == uns_int_okeys:
+    elif typekey == unsint_okeys:
         print("Method not available. Coming soon.")
         return 0
     elif typekey == bin_okeys:

@@ -1,4 +1,4 @@
-#include "qot_sender.h"
+#include "../../include/ui_rotk/sender_uirotk.h"
 #include <stdlib.h>
 
 void sender_okd (OKDOT_SENDER * s)
@@ -14,6 +14,7 @@ void sender_okd (OKDOT_SENDER * s)
 	//char * line = NULL;
 	//size_t len = 0;
 	//ssize_t read;
+	// DEPS = include/unsint_rotkeys/sender_rotkeys.h include/unsint_rotkeys/qot_receiver.h
 
 	int i = 0;
 
@@ -21,7 +22,7 @@ void sender_okd (OKDOT_SENDER * s)
     //getcwd(cwd, sizeof(cwd));
     //printf("Current working dir: %s\n", cwd);
 
-	if ((senderfile = fopen("keys/sender_rotk.txt","r")))
+	if ((senderfile = fopen("../keys/sender_uirotk.txt","r")))
 	{
 		printf("QOT SUCCESS: oblivious key file successfully opened.");
 		for(int j = 0; j < 4; j++)
