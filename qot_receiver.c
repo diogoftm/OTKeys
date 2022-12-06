@@ -9,7 +9,10 @@ void receiver_okd (OKDOT_RECEIVER * r)
 	/*opening key files and storing the keys in the receiver structure*/
 
 	FILE *receiverfile;
+	/* ::NOTE:: uncomment this section to use the system in practice. Otherwise, we will be using always the same key.
 	FILE *tempFile;
+	*/
+
 	//char * line = NULL;
 	//size_t len = 0;
 	//ssize_t read;
@@ -26,7 +29,7 @@ void receiver_okd (OKDOT_RECEIVER * r)
 	//printf("Bob Oblivious Key path: %s\n", bobOKPath);
 
 
-	if ((receiverfile = fopen("quantum_oblivious_key_distribution/signals/oblivious_keys.txt","r")))
+	if ((receiverfile = fopen("keys/receiver_rotk.txt","r")))
 	{
 		for(int j = 0; j < 4; j++)
 		{// skip first 4 lines
@@ -66,6 +69,10 @@ void receiver_okd (OKDOT_RECEIVER * r)
 		printf ("QOT ERROR: failed to open oblivious key file: receiver's auxkey file.\n");
 
 
+	/* ::NOTE:: uncomment this section to use the system in practice. Otherwise, we will be using always the same key.
+
+	:: TODO :: Improve this system. It consumes a lot.
+
 	// Delete one line
 	tempFile = fopen("delete-line.tmp", "w");
 
@@ -88,7 +95,7 @@ void receiver_okd (OKDOT_RECEIVER * r)
 	// Delete src file and rename temp file as src
 	remove("quantum_oblivious_key_distribution/signals/oblivious_keys.txt");
 	rename("delete-line.tmp", "quantum_oblivious_key_distribution/signals/oblivious_keys.txt");
-
+	*/
 
 }
 

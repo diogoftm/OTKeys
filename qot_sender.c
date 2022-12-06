@@ -7,7 +7,10 @@ void sender_okd (OKDOT_SENDER * s)
 	/*opening key file and storing the key in the sender structure*/
 
 	FILE *senderfile;
+	/* ::NOTE:: uncomment this section to use the system in practice. Otherwise, we will be using always the same key.
 	FILE *tempFile;
+	*/
+	
 	//char * line = NULL;
 	//size_t len = 0;
 	//ssize_t read;
@@ -18,7 +21,7 @@ void sender_okd (OKDOT_SENDER * s)
     //getcwd(cwd, sizeof(cwd));
     //printf("Current working dir: %s\n", cwd);
 
-	if ((senderfile = fopen("quantum_oblivious_key_distribution/signals/oblivious_keys.txt","r")))
+	if ((senderfile = fopen("keys/sender_rotk.txt","r")))
 	{
 		printf("QOT SUCCESS: oblivious key file successfully opened.");
 		for(int j = 0; j < 4; j++)
@@ -45,6 +48,11 @@ void sender_okd (OKDOT_SENDER * s)
 	else
 		printf ("QOT ERROR: failed to open oblivious key file: sender's key file DOES THIS CHANGE?? .\n");
 
+
+	/* ::NOTE:: uncomment this section to use the system in practice. Otherwise, we will be using always the same key.
+
+	:: TODO :: Improve this system. It consumes a lot.
+
 	// Delete one line
 	tempFile = fopen("delete-line.tmp", "w");
 
@@ -54,6 +62,7 @@ void sender_okd (OKDOT_SENDER * s)
 		printf("Please check you have read/write previleges.\n");
 		exit(EXIT_FAILURE);
 	}
+
 
 	// Move src file pointer to beginning
 	rewind(senderfile);
@@ -68,6 +77,7 @@ void sender_okd (OKDOT_SENDER * s)
 	remove("quantum_oblivious_key_distribution/signals/oblivious_keys.txt");
 	rename("delete-line.tmp", "quantum_oblivious_key_distribution/signals/oblivious_keys.txt");
 
+	*/
 }
 
 

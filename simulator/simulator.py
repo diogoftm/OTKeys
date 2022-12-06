@@ -62,7 +62,7 @@ def uns_int_rotk(keysize : int, numkey : int) -> None:
     sender_keys, receiver_keys = gen_rotkeys_list(keysize, numkey)
     
     ## Generate sender's file
-    f_sender = open("sender_rotk.txt", "w")
+    f_sender = open("../keys/sender_rotk.txt", "w")
     # print header
     h_sender = header("sender", keysize, numkey)
     f_sender.write(h_sender)
@@ -74,7 +74,7 @@ def uns_int_rotk(keysize : int, numkey : int) -> None:
     f_sender.close()
 
     ## Generate receiver's file
-    f_receiver = open("receiver_rotk.txt", "w")
+    f_receiver = open("../keys/receiver_rotk.txt", "w")
     # print header
     h_receiver = header("receiver", keysize, numkey)
     f_receiver.write(h_receiver)
