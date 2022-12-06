@@ -2,16 +2,31 @@
 
 Mariana Gama and Manuel B Santos
 
-=========== Quantum OT ==========
+## OTKeys
 
-This program implements a Random Oblivious Transfer based on the OT protocol presented in 
-"Generation and Distribution of Quantum Oblivious Keys for Secure Multiparty Computation".
+This repo implements a string Oblivious Transfer based on two types of keys:
 
-The random version of this OT is described in the Random_OT.pdf file in this repository.
+1. Oblivious keys (`ok`).
+2. Random oblivious transfer keys (`rotk`).
+
+For an overview of key-based OT protocols, check the following two references [1],[2].
+
+The repo aims to support two key format: binary format (`b`) and unsigned int format (`ui`). The system is intended to be used along with a quantum oblivious key distribution system. However, for convenience, we provide a simulator that generates keys in the desired format.
 
 
+## Simulation
 
-#### Implementation
+The python simulator is in `simulator/simulator.py`. Currently, it supports the following format:
+
+
+|           | ui_rotk | b_rotk | ui_ok | b_ok |
+|-----------|:-------:|:------:|:-----:|:----:|
+| Supported |   Yes   |   No   |   No  |  No  |
+
+It generates keys to the `keys` folder according to the following convention name: `<party>_<format>`, where `<party> = receiver` or `sender` and `<format> = uirotk`, `brotk`, `uiok` or `bok`.
+
+
+## Implementation
 
 This implementation is divided in two different programs, one for the sender and another for the receiver.
 Each of the programs contains a structure for storing the relevant data for each party, as well as a set of functions.
@@ -19,12 +34,14 @@ These functions are called from a main program and perform the local operations 
 
 The universal hash function is done following the strategy presented in this [blog](https://lemire.me/blog/2018/08/15/fast-strongly-universal-64-bit-hashing-everywhere/)
 
-In `main.c`, there is a test execution of the sender and receiver programs, with the outputs being printed at the end.
+In `src/<format>/main_*.c`, there is a test execution of the sender and receiver programs, with the outputs being printed at the end. The test executable is saved inside `bin` forlder.
 
 
 
 
 #### Compiling 
+
+TBD
 
 Execute the `make` command to generate the associated static library liboqokdot.a, as well as ot_test (test program generated from main.c).
  
@@ -32,6 +49,8 @@ Execute the `make` command to generate the associated static library liboqokdot.
 
 
 #### Remarks
+
+TBD
 
 We are considering that the oblivious key length is 512, and the OT ouput length is 128.
 These values were chosen because of the OT length used in the libscapi/MASCOT, and also because of the relation between these lengths that is required for security (see MASCOT paper).
@@ -44,3 +63,7 @@ If you want to run the oblivious key simulator for each run of this OT, we sugge
 Inside this folder (`quantum_random_oblivious_transfer` folder), there is another folder named `mascot_files`. In that folder, there are the adaptations of the MASCOT makefile (which links the `liboqokdot.a` library when compiling the MASCOT) and also of the `BaseOT.cpp` file. This last file contains the method for doing base OTs for the MASCOT. In the original MASCOT implementation, these OTs are done using the SimpleOT protocol. With this new version of the BaseOT file, the OTs will be done using the Quantum Random OT that we implemented. 
 
 
+## References
+
+[1] [Quantum oblivious transfer: a short review](https://www.mdpi.com/1099-4300/24/7/945)
+[2] [Generation and Distribution of Quantum Oblivious Keys for Secure Multiparty Computation](https://www.mdpi.com/2076-3417/10/12/4080)
