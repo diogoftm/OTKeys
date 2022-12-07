@@ -76,4 +76,5 @@ In this project, there are two folders named `libscapi_files` and `mascot_files`
 ## References
 
 [1] [Quantum oblivious transfer: a short review](https://www.mdpi.com/1099-4300/24/7/945)
+
 [2] [Generation and Distribution of Quantum Oblivious Keys for Secure Multiparty Computation](https://www.mdpi.com/2076-3417/10/12/4080)
