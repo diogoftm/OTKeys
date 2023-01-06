@@ -61,7 +61,7 @@ def uns_int_rotk(keysize : int, numkey : int, numpart : int) -> None:
 
         ## Generate receiver's file
         ## Generate sender's file
-        receiver_path_to_ok = "../keys/receiver_myId" + str(my_num) + "_otherId" + str(other_player) + "_uirotk.txt"
+        receiver_path_to_ok = "../keys/receiver_myId" + str(other_player) + "_otherId" + str(my_num) + "_uirotk.txt"
         f_receiver = open(receiver_path_to_ok, "w")
         # print header
         h_receiver = header("receiver", keysize, numkey)

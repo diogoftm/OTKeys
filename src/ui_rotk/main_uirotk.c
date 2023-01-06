@@ -53,12 +53,12 @@ int main()
 
 	/*execute OKD and read receiver's key and aux key from file*/
 	receiver_okd (&r);
-	printf ("Receiver's key: %u\n\n", r.receiver_OTkey[0]);
+	//printf ("Receiver's key: %u\n\n", r.receiver_OTkey[0]);
 	//printf ("Receiver's aux key: %s\n\n", r.receiver_OTauxkey);	
 
 	/*execute OKD and read sender's key from file*/
 	sender_okd (&s);
-	printf ("Receiver's key: %u\n\n", r.receiver_OTkey[0]);
+	//printf ("Receiver's key: %u\n\n", r.receiver_OTkey[0]);
 	//printf ("Sender's key: %s\n\n", s.sender_OTkey);
 
 	/*use receiver's aux key to generate two index listes (I0 and I1)*/

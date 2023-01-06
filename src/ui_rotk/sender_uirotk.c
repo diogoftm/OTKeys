@@ -27,9 +27,9 @@ void sender_okd (OKDOT_SENDER * s)
     int other_player = s->other_player;
     char sender_path_to_ok[1024] = "";
 
-	printf("I am running as the sender.\n");
-	printf("Just checking my_num: %d.\n", my_num);
-    printf("Just checking other_player: %d.\n", other_player);
+	//printf("I am running as the sender.\n");
+	//printf("Just checking my_num: %d.\n", my_num);
+    //printf("Just checking other_player: %d.\n", other_player);
 
 	// Concatenate the path components into the buffer
     sprintf(sender_path_to_ok, "../keys/sender_myId%d_otherId%d_uirotk.txt", my_num, other_player);

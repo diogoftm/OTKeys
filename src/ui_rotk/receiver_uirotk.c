@@ -33,9 +33,9 @@ void receiver_okd (OKDOT_RECEIVER * r)
     int other_player = r->other_player;
     char receiver_path_to_ok[1024] = "";
 
-	printf("I am running as the receiver.\n");
-	printf("Just checking my_num: %d.\n", my_num);
-    printf("Just checking other_player: %d.\n", other_player);
+	//printf("I am running as the receiver.\n");
+	//printf("Just checking my_num: %d.\n", my_num);
+    //printf("Just checking other_player: %d.\n", other_player);
 
     // Concatenate the path components into the buffer
     sprintf(receiver_path_to_ok, "../keys/receiver_myId%d_otherId%d_uirotk.txt", my_num, other_player);
