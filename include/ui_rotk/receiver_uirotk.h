@@ -12,9 +12,11 @@ extern "C" {
 
 struct qot_receiver
 {
-		unsigned int receiver_OTkey[KEY_LENGTH];
-		unsigned int receiver_OTauxkey[KEY_LENGTH];
-		unsigned int indexlist[2][KEY_LENGTH/2];
+	int my_num;
+	int other_player;
+	unsigned int receiver_OTkey[KEY_LENGTH];
+	unsigned int receiver_OTauxkey[KEY_LENGTH];
+	unsigned int indexlist[2][KEY_LENGTH/2];
 };
 
 typedef struct qot_receiver OKDOT_RECEIVER;

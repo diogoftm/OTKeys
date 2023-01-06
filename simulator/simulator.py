@@ -1,108 +1,77 @@
-import random
-from typing import Union
-
-######################## aux.py
-
-def header(role : str, keysize : int, numkey : int) -> str:
-    
-    header = """Role: """+role+"""
-IPOtherParty: 192.168.0.5
-SizeOKeys: """+str(keysize)+"""
-NumberOKeys: """+str(numkey)
-
-    return header
-
-######################## binary_ok.py
-
-######################## unsigned_ok.py
-
-######################## binary_rot.py
-
-######################## unsigned_int_rot.py
-
-def gen_rotkey_list(keysize : int) -> Union[list, list]:
-
-    sender_key = []
-    receiver_key = []
-
-    # create sender oblivious key: random numbers
-    for _ in range(keysize):
-        sender_key.append(random.randint(0,1))
-        
-    # create receiver oblivious key: random elements by sender from each 2-bit block
-    len_sender_key_list = len(sender_key)
-    for i in range(int(len_sender_key_list/2)):
-        # bit known by receiver: b=0 for the first element, b=1 for the second element
-        b = random.randint(0,1) 
-        receiver_key.append(b)
-        # add the known element (m_b) to receiver's list
-        m_b = sender_key[2*i + b]
-        receiver_key.append(m_b)
-
-    return sender_key, receiver_key
+import argparse
+from uirotk import uns_int_rotk
 
 
-def gen_rotkeys_list(keysize : int, numkey : int) -> Union[list, list]:
+## Parser ##
 
-    sender_keys = []
-    receiver_keys = []
+def main_parser_args():
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description="Generate oblivious keys for oblivious transfer.",
+    )
+    parser.add_argument(
+        "-s",
+        "--size-key",
+        help="""Insert the size of the oblivious key desired.
+        """,
+        type=int,
+        default=512,
+        metavar="\b",
+    )
+    parser.add_argument(
+        "-n",
+        "--num-key",
+        help="""Insert the number of oblivious keys desired in each file.
+        """,
+        type=int,
+        default=128,
+        metavar="\b",
+    )
+    parser.add_argument(
+        "-t",
+        "--type-key",
+        help="""Insert the key type (integer) according to the following encoding:\n
+        0 = unsint_rotkeys | 1 = bin_rotkeys | 2 = unsint_okeys | 3 : bin_okeys.
+        """,
+        type=int,
+        default=0,
+        metavar="\b",
+    )
+    parser.add_argument(
+        "-p",
+        "--num-parties",
+        help="""Insert the number of parties participating in the protocol.
+        """,
+        type=int,
+        default=2,
+        metavar="\b",
+    )
 
-    for _ in range(numkey):
-        sender_key, receiver_key = gen_rotkey_list(keysize)
-        sender_keys.append(sender_key)
-        receiver_keys.append(receiver_key)
-    
-    return sender_keys, receiver_keys
+    return parser.parse_args()
 
 
+## Main ##
 
-def uns_int_rotk(keysize : int, numkey : int) -> None:
-
-    ## generate keys
-    sender_keys, receiver_keys = gen_rotkeys_list(keysize, numkey)
-    
-    ## Generate sender's file
-    f_sender = open("../keys/sender_uirotk.txt", "w")
-    # print header
-    h_sender = header("sender", keysize, numkey)
-    f_sender.write(h_sender)
-    # print all sender's keys
-    for rotk in sender_keys:
-        rotk_str = ''.join(str(elm) for elm in rotk)
-        f_sender.write("\n")
-        f_sender.write(rotk_str)
-    f_sender.close()
-
-    ## Generate receiver's file
-    f_receiver = open("../keys/receiver_uirotk.txt", "w")
-    # print header
-    h_receiver = header("receiver", keysize, numkey)
-    f_receiver.write(h_receiver)
-    # print all sender's keys
-    for rotk in receiver_keys:
-        rotk_str = ''.join(str(elm) for elm in rotk)
-        f_receiver.write("\n")
-        f_receiver.write(rotk_str)
-    f_receiver.close()
-
-
-
-######################## simulator.py
-
-
-def main(keysize : int, numkey : int, typekey : int=0) -> int:
-
-    if keysize % 2 != 0:
-        raise ValueError("The argument ::keysize:: must be even")
+def main() -> int:
 
     unsint_rotkeys = 0
     bin_rotkeys = 1
     unsint_okeys = 2
     bin_okeys = 3
 
+    args = main_parser_args()
+
+    keysize = args.size_key
+    numkey = args.num_key
+    typekey = args.type_key
+    numpart = args.num_parties
+
+    if keysize % 2 != 0:
+        raise ValueError("The argument ::keysize:: must be even")
+
     if typekey == unsint_rotkeys:
         print("Generating Random OT keys.")
-        uns_int_rotk(keysize, numkey)
+        uns_int_rotk(keysize, numkey, numpart)
         print("Random OT keys generated and saved to this current folder.")
         return 1
     elif typekey == bin_rotkeys:
@@ -119,4 +88,4 @@ def main(keysize : int, numkey : int, typekey : int=0) -> int:
 
 
 if __name__ == "__main__":
-    main(512, 2)
+    main()

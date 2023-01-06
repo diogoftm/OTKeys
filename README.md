@@ -53,11 +53,20 @@ If you want to add a new format, use the following conventions:
 4. Adapt the `Makefile` file to build a static librar `.a` as `lib<format>.a` and a test executable called `<format>_test` inside `bin` folder.
 
 
-## Compilation proccess 
+## Compilation 
 
 Execute the `make` command to generate all the associated static libraries `lib<format>.a` supported, as well as all `<format>_test` (test program generated from `main_<format>.c`).
 
 If you just want to execute one of the formats supported, execute `make <format>`.
+
+### Run
+
+To run a test executable (e.g. uirotk_test) does the following:
+
+```
+$ cd bin
+$ ./uirotk_test
+```
 
 
 #### Remarks

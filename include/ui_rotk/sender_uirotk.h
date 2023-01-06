@@ -12,6 +12,8 @@ extern "C" {
 
 struct qot_sender
 {
+	int my_num;
+	int other_player;
 	unsigned int sender_OTkey[KEY_LENGTH];
 };
 

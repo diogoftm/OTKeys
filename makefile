@@ -26,3 +26,6 @@ clean:
 	-rm -f bin/uirotk_test
 	-rm -f obj/*.o
 	-rm -f lib/libuirotk.a
+
+clean-keys:
+	-rm -f keys/*.txt

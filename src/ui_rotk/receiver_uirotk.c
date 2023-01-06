@@ -28,9 +28,21 @@ void receiver_okd (OKDOT_RECEIVER * r)
     //strcat(bobOKPath, "quantum_oblivious_key_distribution/signals/oblivious_keys.txt");
 	//printf("Bob Oblivious Key path: %s\n", bobOKPath);
 
+	// Build file string:
+	int my_num = r->my_num;
+    int other_player = r->other_player;
+    char receiver_path_to_ok[1024] = "";
 
-	if ((receiverfile = fopen("../keys/receiver_uirotk.txt","r")))
+	printf("I am running as the receiver.\n");
+	printf("Just checking my_num: %d.\n", my_num);
+    printf("Just checking other_player: %d.\n", other_player);
+
+    // Concatenate the path components into the buffer
+    sprintf(receiver_path_to_ok, "../keys/receiver_myId%d_otherId%d_uirotk.txt", my_num, other_player);
+
+	if ((receiverfile = fopen(receiver_path_to_ok,"r")))
 	{
+		printf("QOT SUCCESS: receiver oblivious key file successfully opened.\n");
 		for(int j = 0; j < 4; j++)
 		{// skip first 4 lines
 			if(fscanf(receiverfile, "%*[^\n]\n")){}
@@ -62,11 +74,11 @@ void receiver_okd (OKDOT_RECEIVER * r)
 			}
 		}else
 		{
-			printf ("QOT ERROR: No more oblivious.\n");
+			perror("QOT ERROR: No more receiver oblivious keys.\n");
 		}
 	}
 	else
-		printf ("QOT ERROR: failed to open oblivious key file: receiver's auxkey file.\n");
+		perror("QOT ERROR: failed to open receiver oblivious key file.\n");
 
 
 	/* ::NOTE:: uncomment this section to use the system in practice. Otherwise, we will be using always the same key.

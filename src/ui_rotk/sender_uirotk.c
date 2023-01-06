@@ -22,9 +22,21 @@ void sender_okd (OKDOT_SENDER * s)
     //getcwd(cwd, sizeof(cwd));
     //printf("Current working dir: %s\n", cwd);
 
-	if ((senderfile = fopen("../keys/sender_uirotk.txt","r")))
+	// Build file string:
+	int my_num = s->my_num;
+    int other_player = s->other_player;
+    char sender_path_to_ok[1024] = "";
+
+	printf("I am running as the sender.\n");
+	printf("Just checking my_num: %d.\n", my_num);
+    printf("Just checking other_player: %d.\n", other_player);
+
+	// Concatenate the path components into the buffer
+    sprintf(sender_path_to_ok, "../keys/sender_myId%d_otherId%d_uirotk.txt", my_num, other_player);
+
+	if ((senderfile = fopen(sender_path_to_ok,"r")))
 	{
-		printf("QOT SUCCESS: oblivious key file successfully opened.");
+		printf("QOT SUCCESS: sender oblivious key file successfully opened.\n");
 		for(int j = 0; j < 4; j++)
 		{// skip first 4 lines
 			if(fscanf(senderfile, "%*[^\n]\n")){}
@@ -42,13 +54,12 @@ void sender_okd (OKDOT_SENDER * s)
 			}
 		}else
 		{
-			printf ("QOT ERROR: No more oblivious.\n");
+			perror("QOT ERROR: No more sender oblivious keys.\n");
 		}
 			
 	}
 	else
-		printf ("QOT ERROR: failed to open oblivious key file: sender's key file DOES THIS CHANGE?? .\n");
-
+		perror("QOT ERROR: failed to open sender oblivious key file.\n");
 
 	/* ::NOTE:: uncomment this section to use the system in practice. Otherwise, we will be using always the same key.
 

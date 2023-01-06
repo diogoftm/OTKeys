@@ -4,7 +4,11 @@
 int main()
 {
 	OKDOT_RECEIVER r;
+	r.my_num = 1;
+	r.other_player = 0;
 	OKDOT_SENDER s;
+	s.my_num = 0;
+	s.other_player = 1;
 	unsigned char sender_out[2][OUTPUT_LENGTH/32]; //array to store sender's output
 	unsigned char receiver_out[OUTPUT_LENGTH/32]; //array to store receiver's output
 
