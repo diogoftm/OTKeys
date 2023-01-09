@@ -10,25 +10,16 @@ void receiver_okd (OKDOT_RECEIVER * r)
 	/*opening key files and storing the keys in the receiver structure*/
 
 	FILE *receiverfile;
-	/* ::NOTE:: uncomment this section to use the system in practice. Otherwise, we will be using always the same key.
 	FILE *tempFile;
-	*/
-
-	//char * line = NULL;
-	//size_t len = 0;
-	//ssize_t read;
-
-	int i = 0;
-
-
 
 	// Build file string:
 	int my_num = r->my_num;
     int other_player = r->other_player;
-    char receiver_path_to_ok[8096] = "";
+    char receiver_path_to_ok[1024] = "";
 
     // Concatenate the path components into the buffer
     sprintf(receiver_path_to_ok, "keys/receiver_myId%d_otherId%d_uirotk.txt", my_num, other_player);
+	//printf(receiver_path_to_ok);
 
 	if ((receiverfile = fopen(receiver_path_to_ok,"r")))
 	{
@@ -41,6 +32,7 @@ void receiver_okd (OKDOT_RECEIVER * r)
 		char aux_okey[KEY_LENGTH];
 		if (fscanf(receiverfile, "%[^\n]", aux_okey) > 0)
 		{
+			int i = 0;
 			while(i<KEY_LENGTH/2)
 			{
 				unsigned int aux_okey_uint = (unsigned int)aux_okey[2*i];
@@ -70,13 +62,14 @@ void receiver_okd (OKDOT_RECEIVER * r)
 	else
 		perror("QOT ERROR: failed to open receiver oblivious key file.\n");
 
-
-	/* ::NOTE:: uncomment this section to use the system in practice. Otherwise, we will be using always the same key.
-
-	:: TODO :: Improve this system. It consumes a lot.
+	//:: TODO :: Improve this system. It consumes a lot.
 
 	// Delete one line
-	tempFile = fopen("delete-line.tmp", "w");
+	char receiver_path_to_ok_delete_line[1024] = "";
+
+    // Concatenate the path components into the buffer
+    sprintf(receiver_path_to_ok_delete_line, "keys/receiver_myId%d_otherId%d_uirotk_tmp.tmp", my_num, other_player);
+	tempFile = fopen(receiver_path_to_ok_delete_line, "w");
 
 	if(tempFile == NULL)
 	{
@@ -94,10 +87,15 @@ void receiver_okd (OKDOT_RECEIVER * r)
 	fclose(tempFile);
 	fclose(receiverfile);
 
-	// Delete src file and rename temp file as src
-	remove("quantum_oblivious_key_distribution/signals/oblivious_keys.txt");
-	rename("delete-line.tmp", "quantum_oblivious_key_distribution/signals/oblivious_keys.txt");
-	*/
+	// Delete src file
+	if (remove(receiver_path_to_ok)) {
+		printf("Error deleting receiver oblivious key file.\n");
+	}
+
+	// Rename temp file as src
+	if (rename(receiver_path_to_ok_delete_line, receiver_path_to_ok)) {
+		printf("Error renaming receiver oblivious key file.\n");
+	}
 
 }
 
