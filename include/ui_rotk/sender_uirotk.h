@@ -9,6 +9,7 @@ extern "C" {
 
 #define KEY_LENGTH 512
 #define OUTPUT_LENGTH 128
+#define PATH_MAX 8096
 
 struct qot_sender
 {

@@ -19,26 +19,28 @@ void receiver_okd (OKDOT_RECEIVER * r)
 
 	int i = 0;
 
-	//char cwd[1024];
-    //getcwd(cwd, sizeof(cwd));
-    //printf("Current working dir: %s\n", cwd);
 
-    //char bobOKPath[1024];
-    //strncpy(bobOKPath, cwd, 1024);
-    //strcat(bobOKPath, "quantum_oblivious_key_distribution/signals/oblivious_keys.txt");
-	//printf("Bob Oblivious Key path: %s\n", bobOKPath);
+	char* absolute_path_to_key = malloc(PATH_MAX);
+
+	// Get the absolute path to the my_folder directory
+	char* result = realpath("keys", absolute_path_to_key);
+	if (result == NULL) {
+		perror("realpath failed");
+	}
+
+	// Print the absolute path
+	// printf("Absolute path: %s\n", absolute_path_to_key);
+
 
 	// Build file string:
 	int my_num = r->my_num;
     int other_player = r->other_player;
-    char receiver_path_to_ok[1024] = "";
-
-	//printf("I am running as the receiver.\n");
-	//printf("Just checking my_num: %d.\n", my_num);
-    //printf("Just checking other_player: %d.\n", other_player);
+    char receiver_path_to_ok[8096] = "";
 
     // Concatenate the path components into the buffer
-    sprintf(receiver_path_to_ok, "../keys/receiver_myId%d_otherId%d_uirotk.txt", my_num, other_player);
+    sprintf(receiver_path_to_ok, "%s/receiver_myId%d_otherId%d_uirotk.txt", absolute_path_to_key, my_num, other_player);
+	// Free the memory allocated for the absolute path
+	free(absolute_path_to_key);
 
 	if ((receiverfile = fopen(receiver_path_to_ok,"r")))
 	{

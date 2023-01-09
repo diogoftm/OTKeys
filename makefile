@@ -13,7 +13,7 @@ libuirotk: $(OBJS_UIROTK)
 	$(AR) -crs lib/libuirotk.a $(OBJS_UIROTK)
 
 uirotk_test: $(OBJS_UIROTK)
-	$(CC) $(CFLAGS) -o bin/$@ $^
+	$(CC) $(CFLAGS) -o $@ $^
 
 obj/%_uirotk.o: src/ui_rotk/%_uirotk.c $(DEPS_UIROTK)
 	$(CC) $(CFLAGS) -c -o $@ $<
