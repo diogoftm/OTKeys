@@ -19,17 +19,6 @@ void sender_okd (OKDOT_SENDER * s)
 	int i = 0;
 
 
-	char* absolute_path_to_key = malloc(PATH_MAX);
-
-	// Get the absolute path to the my_folder directory
-	char* result = realpath("keys", absolute_path_to_key);
-	if (result == NULL) {
-		perror("realpath failed");
-	}
-
-	// Print the absolute path
-	// printf("Absolute path: %s\n", absolute_path_to_key);
-
 	// Build file string:
 	int my_num = s->my_num;
     int other_player = s->other_player;
@@ -37,9 +26,7 @@ void sender_okd (OKDOT_SENDER * s)
 
 
 	// Concatenate the path components into the buffer
-    sprintf(sender_path_to_ok, "%s/sender_myId%d_otherId%d_uirotk.txt", absolute_path_to_key, my_num, other_player);
-	// Free the memory allocated for the absolute path
-	free(absolute_path_to_key);
+    sprintf(sender_path_to_ok, "keys/sender_myId%d_otherId%d_uirotk.txt", my_num, other_player);
 
 	if ((senderfile = fopen(sender_path_to_ok,"r")))
 	{

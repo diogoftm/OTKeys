@@ -2,6 +2,7 @@
 #include <stdlib.h>
 //#include <process.h>
 #include <string.h>
+#include <unistd.h>
 
 void receiver_okd (OKDOT_RECEIVER * r)
 {
@@ -20,17 +21,6 @@ void receiver_okd (OKDOT_RECEIVER * r)
 	int i = 0;
 
 
-	char* absolute_path_to_key = malloc(PATH_MAX);
-
-	// Get the absolute path to the my_folder directory
-	char* result = realpath("keys", absolute_path_to_key);
-	if (result == NULL) {
-		perror("realpath failed");
-	}
-
-	// Print the absolute path
-	// printf("Absolute path: %s\n", absolute_path_to_key);
-
 
 	// Build file string:
 	int my_num = r->my_num;
@@ -38,9 +28,7 @@ void receiver_okd (OKDOT_RECEIVER * r)
     char receiver_path_to_ok[8096] = "";
 
     // Concatenate the path components into the buffer
-    sprintf(receiver_path_to_ok, "%s/receiver_myId%d_otherId%d_uirotk.txt", absolute_path_to_key, my_num, other_player);
-	// Free the memory allocated for the absolute path
-	free(absolute_path_to_key);
+    sprintf(receiver_path_to_ok, "keys/receiver_myId%d_otherId%d_uirotk.txt", my_num, other_player);
 
 	if ((receiverfile = fopen(receiver_path_to_ok,"r")))
 	{
