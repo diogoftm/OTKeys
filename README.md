@@ -23,7 +23,11 @@ The python simulator is in `simulator/simulator.py`. Currently, it supports the 
 |-----------|:-------:|:------:|:-----:|:----:|
 | Supported |   Yes   |   No   |   No  |  No  |
 
-It generates keys to the `keys` folder according to the following convention name: `<party>_<format>`, where `<party> = receiver` or `sender` and `<format> = uirotk`, `brotk`, `uiok` or `bok`.
+It generates keys to the `keys` folder according to the following convention name: 
+
+`<party>_myId<i>_otherId<j>_<format>.txt`
+
+ where `<party> = receiver` or `sender`, `<i>` and `<j>` (IDs of each party where 0 <= i,j < number of parties) and `<format> = uirotk`, `brotk`, `uiok` or `bok`.
 
 
 ## Implementation
