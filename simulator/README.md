@@ -37,7 +37,15 @@ It will generate oblivious keys (for the sender and the receiver) and saves insi
 - Type of key (`-t`): `ui_rotk`
 - Number of parties (`-p`): `2`
 
-You can change these settings using the corresponding flags 
+You can change these settings using the corresponding flags (`-s`, `-n`, `-t`, `-p`). 
+
+### Naming
+
+For each `<i>` and `<j>` (IDs of each party where 0 <= i,j < number of parties), it will generate two files with the following structure:
+
+`receiver_myId<i>_otherId<j>_uirotk.txt`
+
+`sender_myId<i>_otherId<j>_uirotk.txt`
 
 ### Help command
 
