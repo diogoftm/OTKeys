@@ -27,7 +27,7 @@ It generates keys to the `keys` folder according to the following convention nam
 
 `<party>_myId<i>_otherId<j>_<format>.txt`
 
- where `<party> = receiver` or `sender`, `<i>` and `<j>` (IDs of each party where 0 <= i,j < number of parties) and `<format> = uirotk`, `brotk`, `uiok` or `bok`.
+ where `<party> = receiver` or `sender`, `<i>` and `<j>` are the IDs of each party where 0 <= i,j < number of parties and `<format> = uirotk`, `brotk`, `uiok` or `bok`.
 
 
 ## Implementation
