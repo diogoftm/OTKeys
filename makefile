@@ -8,13 +8,13 @@ DEPS_UIROTK = include/ui_rotk/sender_uirotk.h include/ui_rotk/receiver_uirotk.h
 
 ###################################################
 
-all: lib uirotk_test libuirotk 
+all: uirotk_test libuirotk 
+
+libuirotk: lib $(OBJS_UIROTK)
+	$(AR) -crs lib/libuirotk.a $(OBJS_UIROTK)
 
 lib: 
 	test -d lib || mkdir lib
-
-libuirotk: $(OBJS_UIROTK)
-	$(AR) -crs lib/libuirotk.a $(OBJS_UIROTK)
 
 uirotk_test: $(OBJS_UIROTK)
 	$(CC) $(CFLAGS) -o $@ $^
