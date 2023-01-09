@@ -5,9 +5,13 @@ AS = $(CC) $(CFLAGS) -c
 OBJS_UIROTK = obj/sender_uirotk.o obj/receiver_uirotk.o obj/main_uirotk.o
 DEPS_UIROTK = include/ui_rotk/sender_uirotk.h include/ui_rotk/receiver_uirotk.h
 
+
 ###################################################
 
-all: uirotk_test libuirotk
+all: lib uirotk_test libuirotk 
+
+lib: 
+	test -d lib || mkdir lib
 
 libuirotk: $(OBJS_UIROTK)
 	$(AR) -crs lib/libuirotk.a $(OBJS_UIROTK)
@@ -26,6 +30,7 @@ clean:
 	-rm -f bin/uirotk_test
 	-rm -f obj/*.o
 	-rm -f lib/libuirotk.a
+
 
 clean-keys:
 	-rm -f keys/*.txt
