@@ -20,7 +20,6 @@ void sender_okd (OKDOT_SENDER * s)
 
 	if ((senderfile = fopen(sender_path_to_ok,"r")))
 	{
-		printf("QOT SUCCESS: sender oblivious key file successfully opened.\n");
 		for(int j = 0; j < 4; j++)
 		{// skip first 4 lines
 			if(fscanf(senderfile, "%*[^\n]\n")){}
@@ -57,8 +56,8 @@ void sender_okd (OKDOT_SENDER * s)
 
 	if(tempFile == NULL)
 	{
-		printf("Unnable to create temporary file.\n");
-		printf("Please check you have read/write previleges.\n");
+		perror("Unnable to create temporary file.\n");
+		perror("Please check you have read/write previleges.\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -74,12 +73,12 @@ void sender_okd (OKDOT_SENDER * s)
 
 	// Delete src file
 	if (remove(sender_path_to_ok)) {
-		printf("Error deleting sender oblivious key file.\n");
+		perror("Error deleting sender oblivious key file.\n");
 	}
 
 	// Rename temp file as src
 	if (rename(sender_path_to_ok_delete_line, sender_path_to_ok)) {
-		printf("Error renaming sender oblivious key file.\n");
+		perror("Error renaming sender oblivious key file.\n");
 	}
 
 	

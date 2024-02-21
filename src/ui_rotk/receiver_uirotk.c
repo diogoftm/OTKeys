@@ -19,11 +19,9 @@ void receiver_okd (OKDOT_RECEIVER * r)
 
     // Concatenate the path components into the buffer
     sprintf(receiver_path_to_ok, "%skeys/receiver_myId%d_otherId%d_uirotk.txt", r->trailing_path_to_ok, my_num, other_player);
-	printf(receiver_path_to_ok);
 
 	if ((receiverfile = fopen(receiver_path_to_ok,"r")))
 	{
-		printf("QOT SUCCESS: receiver oblivious key file successfully opened.\n");
 		for(int j = 0; j < 4; j++)
 		{// skip first 4 lines
 			if(fscanf(receiverfile, "%*[^\n]\n")){}
@@ -73,8 +71,7 @@ void receiver_okd (OKDOT_RECEIVER * r)
 
 	if(tempFile == NULL)
 	{
-		printf("Unnable to create temporary file.\n");
-		printf("Please check you have read/write previleges.\n");
+		perror("Unnable to create temporary file.\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -89,12 +86,12 @@ void receiver_okd (OKDOT_RECEIVER * r)
 
 	// Delete src file
 	if (remove(receiver_path_to_ok)) {
-		printf("Error deleting receiver oblivious key file.\n");
+		perror("Error deleting receiver oblivious key file.\n");
 	}
 
 	// Rename temp file as src
 	if (rename(receiver_path_to_ok_delete_line, receiver_path_to_ok)) {
-		printf("Error renaming receiver oblivious key file.\n");
+		perror("Error renaming receiver oblivious key file.\n");
 	}
 
 }
