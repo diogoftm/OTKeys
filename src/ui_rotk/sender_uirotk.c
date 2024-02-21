@@ -16,7 +16,7 @@ void sender_okd (OKDOT_SENDER * s)
 
 
 	// Concatenate the path components into the buffer
-    sprintf(sender_path_to_ok, "keys/sender_myId%d_otherId%d_uirotk.txt", my_num, other_player);
+    sprintf(sender_path_to_ok, "%skeys/sender_myId%d_otherId%d_uirotk.txt", s->trailing_path_to_ok, my_num, other_player);
 
 	if ((senderfile = fopen(sender_path_to_ok,"r")))
 	{
@@ -52,7 +52,7 @@ void sender_okd (OKDOT_SENDER * s)
 	char sender_path_to_ok_delete_line[1024] = "";
 
     // Concatenate the path components into the buffer
-    sprintf(sender_path_to_ok_delete_line, "keys/sender_myId%d_otherId%d_uirotk_tmp.tmp", my_num, other_player);
+    sprintf(sender_path_to_ok_delete_line, "%skeys/sender_myId%d_otherId%d_uirotk_tmp.tmp", s->trailing_path_to_ok, my_num, other_player);
 	tempFile = fopen(sender_path_to_ok_delete_line, "w");
 
 	if(tempFile == NULL)

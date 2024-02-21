@@ -9,11 +9,13 @@ extern "C" {
 
 #define KEY_LENGTH 512
 #define OUTPUT_LENGTH 128
+//#define PATH_MAX 8096
 
 struct qot_receiver
 {
 	int my_num;
 	int other_player;
+	char trailing_path_to_ok[32];
 	unsigned int receiver_OTkey[KEY_LENGTH];
 	unsigned int receiver_OTauxkey[KEY_LENGTH];
 	unsigned int indexlist[2][KEY_LENGTH/2];

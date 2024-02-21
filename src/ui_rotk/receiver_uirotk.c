@@ -18,8 +18,8 @@ void receiver_okd (OKDOT_RECEIVER * r)
     char receiver_path_to_ok[1024] = "";
 
     // Concatenate the path components into the buffer
-    sprintf(receiver_path_to_ok, "keys/receiver_myId%d_otherId%d_uirotk.txt", my_num, other_player);
-	//printf(receiver_path_to_ok);
+    sprintf(receiver_path_to_ok, "%skeys/receiver_myId%d_otherId%d_uirotk.txt", r->trailing_path_to_ok, my_num, other_player);
+	printf(receiver_path_to_ok);
 
 	if ((receiverfile = fopen(receiver_path_to_ok,"r")))
 	{
@@ -68,7 +68,7 @@ void receiver_okd (OKDOT_RECEIVER * r)
 	char receiver_path_to_ok_delete_line[1024] = "";
 
     // Concatenate the path components into the buffer
-    sprintf(receiver_path_to_ok_delete_line, "keys/receiver_myId%d_otherId%d_uirotk_tmp.tmp", my_num, other_player);
+    sprintf(receiver_path_to_ok_delete_line, "%skeys/receiver_myId%d_otherId%d_uirotk_tmp.tmp", r->trailing_path_to_ok, my_num, other_player);
 	tempFile = fopen(receiver_path_to_ok_delete_line, "w");
 
 	if(tempFile == NULL)
