@@ -1,7 +1,0 @@
-{
-    "files.associations": {
-        "limits.h": "c",
-        "receiver_uirotk.h": "c",
-        "sender_uirotk.h": "c"
-    }
-}

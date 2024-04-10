@@ -1,19 +1,42 @@
 #include "../../include/ui_rotk/receiver_uirotk.h"
 #include "../../include/ui_rotk/sender_uirotk.h"
 
+#include <pthread.h>
+
+// Note that for this test to run as expected distinct sender and receiver certificates need to be defined 
+// and they must match the SAE ids defined bellow.
+
+void* receiver_thread(void *arg) {
+	receiver_okd ((OKDOT_RECEIVER*)arg);
+}
+
+void* sender_thread(void *arg) {
+	sender_okd ((OKDOT_SENDER*)arg);
+}
+
 int main()
 {
 	OKDOT_RECEIVER r;
 	r.my_num = 1;
 	r.other_player = 0;
+	strcpy(r.other_player_ip,  "127.0.0.1");
+	r.other_player_port = 5454;
+	strcpy(r.other_player_sai_id,  "sae_001");
+	strcpy(r.my_ip, "127.0.0.1");
+	r.my_port = 5252;
+
 	OKDOT_SENDER s;
 	s.my_num = 0;
 	s.other_player = 1;
+	strcpy(s.other_player_ip,  "127.0.0.1");
+	strcpy(s.other_player_sai_id,  "sae_002");
+	s.other_player_port = 5252;
+	strcpy(s.my_ip,  "127.0.0.1");
+	s.my_port = 5454;
 	unsigned char sender_out[2][OUTPUT_LENGTH/32]; //array to store sender's output
 	unsigned char receiver_out[OUTPUT_LENGTH/32]; //array to store receiver's output
 
 	unsigned char receiver_in = 1; //receiver choice bit
-
 
 	/*These 64bit values will define the universal hash functions used in the OT. 
 	 * For the sake of simplicity, we define them at the beginning of this test program, 
@@ -47,27 +70,14 @@ int main()
 	v[1][10] = 10460695327545550466U;
 	v[1][11] = 11419394045892977570U;
 
-
-
-
-
-	/*execute OKD and read receiver's key and aux key from file*/
-	receiver_okd (&r);
-	//printf ("Receiver's key: %u\n\n", r.receiver_OTkey[0]);
-	//printf ("Receiver's aux key: %s\n\n", r.receiver_OTauxkey);	
-
-	/*execute OKD and read sender's key from file*/
-	sender_okd (&s);
-	//printf ("Receiver's key: %u\n\n", r.receiver_OTkey[0]);
-	//printf ("Sender's key: %s\n\n", s.sender_OTkey);
-
-	/*use receiver's aux key to generate two index listes (I0 and I1)*/
+	pthread_t thread1, thread2;
+	pthread_create(&thread1, NULL, sender_thread, (void*)&s);
+	pthread_create(&thread2, NULL, receiver_thread, (void*)&r);
+    pthread_join(thread1, NULL);
+	pthread_join(thread2, NULL);
+	
 	receiver_indexlist (&r);
-	//printf ("list 0: %d\n", r.indexlist[0][9]);
-	//printf ("list 1: %d\n", r.indexlist[1][9]);
 
-
-	/*use the (supposedly random) numbers stored in array v, as well as the index listes received from the receiver, to generate the output */
 	sender_output (&s, v[0], v[1], r.indexlist[receiver_in], r.indexlist[(receiver_in)^0x1], sender_out);
 	
 	for (int i=0; i<OUTPUT_LENGTH/32; i++)
@@ -76,7 +86,6 @@ int main()
 
 
 	
-	/*use the (supposedly random) numbers stored in array v, as well as the index list I0, to generate the output*/
 	receiver_output (&r, v[receiver_in], receiver_out);
 
 	for (int i=0; i<OUTPUT_LENGTH/32; i++)
@@ -84,12 +93,12 @@ int main()
 	printf ("\n\n");
 
 
-	/*new execution of the protocol with a different choice bit*/
-
 	receiver_in = 0;
 
-	receiver_okd (&r);
-	sender_okd (&s);
+	pthread_create(&thread1, NULL, sender_thread, (void*)&s);
+	pthread_create(&thread2, NULL, receiver_thread, (void*)&r);
+    pthread_join(thread1, NULL);
+	pthread_join(thread2, NULL);
 	receiver_indexlist (&r);
 	
 	sender_output (&s, v[0], v[1], r.indexlist[receiver_in], r.indexlist[(receiver_in)^0x1], sender_out);
@@ -101,8 +110,6 @@ int main()
 	for (int i=0; i<OUTPUT_LENGTH/32; i++)
 		printf ("Receiver's output %x  \n", receiver_out[i]);
 	printf ("\n\n");
-
-
 
 	return 0;
 }

@@ -1,160 +1,280 @@
 #include "../../include/ui_rotk/receiver_uirotk.h"
+#include "../../include/ui_rotk/utils.h"
+
 #include <stdlib.h>
-//#include <process.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <jansson.h>
+#include <curl/curl.h>
+#include <asm-generic/socket.h>
 
-void receiver_okd (OKDOT_RECEIVER * r)
+struct MemoryStruct
 {
+    char *memory;
+    size_t size;
+};
 
-	/*opening key files and storing the keys in the receiver structure*/
+// Callback function to handle received data from KMS
+size_t write_callback_(void *ptr, size_t size, size_t nmemb, void *userdata)
+{
+    size_t realsize = size * nmemb;
+    struct MemoryStruct *mem = (struct MemoryStruct *)userdata;
 
-	FILE *receiverfile;
-	FILE *tempFile;
+    mem->memory = realloc(mem->memory, mem->size + realsize + 1);
+    if (mem->memory == NULL)
+    {
+        perror("not enough memory (realloc returned NULL)\n");
+        return 0;
+    }
 
-	// Build file string:
-	int my_num = r->my_num;
-    int other_player = r->other_player;
-    char receiver_path_to_ok[1024] = "";
+    memcpy(&(mem->memory[mem->size]), ptr, realsize);
+    mem->size += realsize;
+    mem->memory[mem->size] = 0;
 
-    // Concatenate the path components into the buffer
-    sprintf(receiver_path_to_ok, "%skeys/receiver_myId%d_otherId%d_uirotk.txt", r->trailing_path_to_ok, my_num, other_player);
-
-	if ((receiverfile = fopen(receiver_path_to_ok,"r")))
-	{
-		for(int j = 0; j < 4; j++)
-		{// skip first 4 lines
-			if(fscanf(receiverfile, "%*[^\n]\n")){}
-		}
-
-		char aux_okey[KEY_LENGTH];
-		if (fscanf(receiverfile, "%[^\n]", aux_okey) > 0)
-		{
-			int i = 0;
-			while(i<KEY_LENGTH/2)
-			{
-				unsigned int aux_okey_uint = (unsigned int)aux_okey[2*i];
-				unsigned int okey_uint = (unsigned int)aux_okey[2*i + 1];
-				if(aux_okey_uint == 48) // If aux_key is zero
-				{
-					r->receiver_OTauxkey[2*i] = 0; // The first element is known
-					r->receiver_OTauxkey[2*i + 1] = 1; // The second element is unkown
-
-					r->receiver_OTkey[2*i] = okey_uint - 48; //Saves the value known by the receiver
-					r->receiver_OTkey[2*i + 1] = 1; // Saves 1: meaning it is unkown
-
-				}else{
-					r->receiver_OTauxkey[2*i] = 1; // The first element is unknown
-					r->receiver_OTauxkey[2*i + 1] = 0; // The second element is known
-
-					r->receiver_OTkey[2*i] = 1; // Saves 1: meaning it is unkown 
-					r->receiver_OTkey[2*i + 1] = okey_uint - 48; // Saves the value known by the receiver
-				}
-				i++;
-			}
-		}else
-		{
-			perror("QOT ERROR: No more receiver oblivious keys.\n");
-		}
-	}
-	else
-		perror("QOT ERROR: failed to open receiver oblivious key file.\n");
-
-	//:: TODO :: Improve this system. It consumes a lot.
-
-	// Delete one line
-	char receiver_path_to_ok_delete_line[1024] = "";
-
-    // Concatenate the path components into the buffer
-    sprintf(receiver_path_to_ok_delete_line, "%skeys/receiver_myId%d_otherId%d_uirotk_tmp.tmp", r->trailing_path_to_ok, my_num, other_player);
-	tempFile = fopen(receiver_path_to_ok_delete_line, "w");
-
-	if(tempFile == NULL)
-	{
-		perror("Unnable to create temporary file.\n");
-		exit(EXIT_FAILURE);
-	}
-
-	// Move src file pointer to beginning
-	rewind(receiverfile);
-	// Delete given line from file
-	deleteLine(receiverfile, tempFile, 5);
-
-	// Close all open files
-	fclose(tempFile);
-	fclose(receiverfile);
-
-	// Delete src file
-	if (remove(receiver_path_to_ok)) {
-		perror("Error deleting receiver oblivious key file.\n");
-	}
-
-	// Rename temp file as src
-	if (rename(receiver_path_to_ok_delete_line, receiver_path_to_ok)) {
-		perror("Error renaming receiver oblivious key file.\n");
-	}
-
+    return realsize;
 }
 
-
-
-
-
-void receiver_indexlist (OKDOT_RECEIVER * r)
+// Get key id from the other player
+char *receive_key_id(char *my_ip, unsigned int my_port)
 {
-	int j = 0;
-	int k = 0;
+    int server_fd, new_socket;
+    ssize_t valread;
+    struct sockaddr_in address;
+    int opt = 1;
+    socklen_t addrlen = sizeof(address);
+    char *buffer = (char *)malloc(1024);
 
+    if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+    {
+        perror("socket failed");
+        exit(EXIT_FAILURE);
+    }
 
-	/*generate I0 and I1 index lists from the receiver aux key*/
-	for (int i = 0; i<KEY_LENGTH; i++)
-	{	
-		
-		if (r->receiver_OTauxkey[i] == 0) // known bit
-		{
-			r->indexlist[0][j] = i;
-			j++;
-		}
-		else if (r->receiver_OTauxkey[i] == 1) // unkown bit
-		{
-			r->indexlist[1][k] = i;
-			k++;
-		}
-		else
-			printf ("OT ERROR: invalid key character found.\n");
-	}
+    if (setsockopt(server_fd, SOL_SOCKET,
+                   SO_REUSEADDR | SO_REUSEPORT, &opt,
+                   sizeof(opt)))
+    {
+        perror("setsockopt");
+        exit(EXIT_FAILURE);
+    }
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = inet_addr(my_ip);
+    address.sin_port = htons(my_port);
 
+    if (bind(server_fd, (struct sockaddr *)&address,
+             sizeof(address)) < 0)
+    {
+        perror("bind failed");
+        exit(EXIT_FAILURE);
+    }
+    if (listen(server_fd, 3) < 0)
+    {
+        perror("listen");
+        exit(EXIT_FAILURE);
+    }
+    if ((new_socket = accept(server_fd, (struct sockaddr *)&address,
+                             &addrlen)) < 0)
+    {
+        perror("accept");
+        exit(EXIT_FAILURE);
+    }
+
+    valread = read(new_socket, buffer, 1024 - 1);
+    if (valread < 0)
+    {
+        perror("read");
+        free(buffer);
+        exit(EXIT_FAILURE);
+    }
+
+    buffer[valread] = '\0';
+
+    close(new_socket);
+    close(server_fd);
+
+    return buffer;
 }
 
-
-
-
-
-void receiver_output (OKDOT_RECEIVER * r, unsigned long long int * vb, unsigned char * output)
+void receiver_okd(OKDOT_RECEIVER *r)
 {
-	unsigned long int input32[KEY_LENGTH/(2*32)] = {0}; 
+    // Get key id from the other player
 
+    char *key_id = receive_key_id(r->my_ip, r->my_port + 1);
 
-	/*converts the binary hash inputs into 32bit ints*/
-	for (int i=0; i<32; i++)
-	{
-		for (int j=0; j<KEY_LENGTH/(2*32); j++)
-		{	
-			input32[j] <<= 1;
-			input32[j] += r->receiver_OTkey[r->indexlist[0][i+j*32]] - '0';
-		}
-	}
+    // Request key to the KMS
 
+    struct MemoryStruct chunk;
+    chunk.memory = malloc(1);
+    chunk.size = 0;
 
-	/*hashes pairs of ints from the input32 array into another 32bit value, which is stored in the output array*/
-	for (int i=0; i<OUTPUT_LENGTH/32; i++)
-	{
-		output[i] = (unsigned long int) ((vb[0+3*i]*input32[0+2*i] + vb[1+3*i]*input32[1+2*i] + vb[2+3*i]) >> 32);
-	}
+    CURL *curl;
+    CURLcode res;
+    curl = curl_easy_init();
+    if (curl)
+    {
+        char url[256];
+        sprintf(url, "https://%s/api/v1/keys/%s/dec_keys?key_ID=%s", KMS_URI, r->other_player_sai_id, key_id);
 
+        curl_easy_setopt(curl, CURLOPT_URL, url);
+        curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_3);
+        curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_3);
+        curl_easy_setopt(curl, CURLOPT_CAINFO, ROOT_CA);
+        curl_easy_setopt(curl, CURLOPT_SSLCERT, RECEIVER_SAE_CRT);
+        curl_easy_setopt(curl, CURLOPT_SSLKEY, RECEIVER_SAE_KEY);
 
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback_);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
 
+        res = curl_easy_perform(curl);
+
+        if (res != CURLE_OK)
+            fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+
+        curl_easy_cleanup(curl);
+    }
+
+    json_t *root;
+    json_error_t error;
+    root = json_loads(chunk.memory, 0, &error);
+    if (!root)
+    {
+        fprintf(stderr, "error: on line %d: %s\n", error.line, error.text);
+        return 1;
+    }
+
+    json_t *keys_array = json_object_get(root, "keys");
+    if (!json_array_size(keys_array))
+    {
+        fprintf(stderr, "error: keys array is empty\n");
+        json_decref(root);
+        return 1;
+    }
+
+    json_t *key_obj = json_array_get(keys_array, 0);
+    if (!key_obj)
+    {
+        fprintf(stderr, "error: failed to get key at index 0\n");
+        json_decref(root);
+        return 1;
+    }
+
+    json_t *key_value = json_object_get(key_obj, "key");
+    if (!json_is_string(key_value))
+    {
+        fprintf(stderr, "error: key value is not a string\n");
+        json_decref(root);
+        return 1;
+    }
+
+    const char *key = json_string_value(key_value);
+    size_t key_len = json_string_length(key_value);
+
+    char *key_str = malloc(key_len + 1);
+    if (key_str == NULL)
+    {
+        perror("QOT ERROR: Failed to allocate memory for key.\n");
+        return 1;
+    }
+    memcpy(key_str, key, key_len);
+    key_str[key_len] = '\0';
+
+    // Decode key from base 64
+
+    size_t out_len = b64_decoded_size(key_str) + 1;
+    char *out = malloc(out_len);
+    b64_decode(key_str, (unsigned char *)out, out_len);
+    out[out_len] = '\0';
+
+    // Save the key
+
+    unsigned int *bitsArray = (unsigned int *)malloc(512 * sizeof(unsigned int));
+    if (bitsArray == NULL)
+    {
+        printf("Memory allocation failed\n");
+        return 1;
+    }
+
+    for (int i = 0; i < 512; i++)
+    {
+        bitsArray[i] = 0;
+    }
+
+    for (int i = 0; i < out_len - 1; i++)
+    {
+        for (int d = 0; d < 8; d++)
+        {
+            bitsArray[i * 8 + d] = !!((out[i] << d) & 0x80);
+        }
+    }
+
+    int i = 0;
+    while (i < KEY_LENGTH / 2)
+    {
+        unsigned int aux_okey_uint = (unsigned int)bitsArray[2 * i];
+        unsigned int okey_uint = (unsigned int)bitsArray[2 * i + 1];
+        if (aux_okey_uint == 0) // If aux_key is zero
+        {
+            r->receiver_OTauxkey[2 * i] = 0;     // The first element is known
+            r->receiver_OTauxkey[2 * i + 1] = 1; // The second element is unkown
+
+            r->receiver_OTkey[2 * i] = okey_uint; // Saves the value known by the receiver
+            r->receiver_OTkey[2 * i + 1] = 1;     // Saves 1: meaning it is unkown
+        }
+        else
+        {
+            r->receiver_OTauxkey[2 * i] = 1;     // The first element is unknown
+            r->receiver_OTauxkey[2 * i + 1] = 0; // The second element is known
+
+            r->receiver_OTkey[2 * i] = 1;             // Saves 1: meaning it is unkown
+            r->receiver_OTkey[2 * i + 1] = okey_uint; // Saves the value known by the receiver
+        }
+        i++;
+    }
 }
 
+void receiver_indexlist(OKDOT_RECEIVER *r)
+{
+    int j = 0;
+    int k = 0;
 
+    /*generate I0 and I1 index lists from the receiver aux key*/
+    for (int i = 0; i < KEY_LENGTH; i++)
+    {
 
+        if (r->receiver_OTauxkey[i] == 0) // known bit
+        {
+            r->indexlist[0][j] = i;
+            j++;
+        }
+        else if (r->receiver_OTauxkey[i] == 1) // unkown bit
+        {
+            r->indexlist[1][k] = i;
+            k++;
+        }
+        else
+            printf("OT ERROR: invalid key character found.\n");
+    }
+}
+
+void receiver_output(OKDOT_RECEIVER *r, unsigned long long int *vb, unsigned char *output)
+{
+    unsigned long int input32[KEY_LENGTH / (2 * 32)] = {0};
+
+    /*converts the binary hash inputs into 32bit ints*/
+    for (int i = 0; i < 32; i++)
+    {
+        for (int j = 0; j < KEY_LENGTH / (2 * 32); j++)
+        {
+            input32[j] <<= 1;
+            input32[j] += r->receiver_OTkey[r->indexlist[0][i + j * 32]] - '0';
+        }
+    }
+
+    /*hashes pairs of ints from the input32 array into another 32bit value, which is stored in the output array*/
+    for (int i = 0; i < OUTPUT_LENGTH / 32; i++)
+    {
+        output[i] = (unsigned long int)((vb[0 + 3 * i] * input32[0 + 2 * i] + vb[1 + 3 * i] * input32[1 + 2 * i] + vb[2 + 3 * i]) >> 32);
+    }
+}
