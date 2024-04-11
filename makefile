@@ -18,7 +18,7 @@ DEPS_UIROTK = include/ui_rotk/sender_uirotk.h include/ui_rotk/receiver_uirotk.h 
 all: setup uirotk_test libuirotk
 
 setup:
-	mkdir obj
+	test -d obj || mkdir obj
 
 libuirotk: lib $(OBJS_UIROTK)
 	$(AR) -crs lib/libuirotk.a $(OBJS_UIROTK)
