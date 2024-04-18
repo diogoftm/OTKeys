@@ -168,7 +168,6 @@ void sender_okd(OKDOT_SENDER *s)
 
         // Send key id to the other player
 
-        printf("other player -> %d %s\n", s->other_player, key_id);
         send_key_id(key_id, s->other_player_ip, s->other_player_port + s->my_num + 1);
 
         free(chunk.memory);
