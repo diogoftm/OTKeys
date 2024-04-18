@@ -25,6 +25,7 @@ extern "C"
 #include <stdio.h>
 
 #define KEY_LENGTH 512
+#define KEY_MEM_SIZE 128
 #define OUTPUT_LENGTH 128
 
 	struct qot_receiver
@@ -37,6 +38,9 @@ extern "C"
 		char other_player_ip[16];
 		unsigned int other_player_port;
 		char other_player_sai_id[8];
+
+		char *mem;
+		int counter;
 
 		unsigned int receiver_OTkey[KEY_LENGTH];
 		unsigned int receiver_OTauxkey[KEY_LENGTH];

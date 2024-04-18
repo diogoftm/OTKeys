@@ -99,97 +99,100 @@ char *receive_key_id(char *my_ip, unsigned int my_port)
 
 void receiver_okd(OKDOT_RECEIVER *r)
 {
-    // Get key id from the other player
-
-    char *key_id = receive_key_id(r->my_ip, r->my_port + 1);
-
-    // Request key to the KMS
-
-    struct MemoryStruct chunk;
-    chunk.memory = malloc(1);
-    chunk.size = 0;
-
-    CURL *curl;
-    CURLcode res;
-    curl = curl_easy_init();
-    if (curl)
+    if (r->mem == NULL || r->counter >= KEY_MEM_SIZE)
     {
-        char url[256];
-        sprintf(url, "https://%s/api/v1/keys/%s/dec_keys?key_ID=%s", KMS_URI, r->other_player_sai_id, key_id);
+        // Get key id from the other player
+        char *key_id = receive_key_id(r->my_ip, r->my_port + r->other_player + 1);
 
-        curl_easy_setopt(curl, CURLOPT_URL, url);
-        curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_3);
-        curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_3);
-        curl_easy_setopt(curl, CURLOPT_CAINFO, ROOT_CA);
-        curl_easy_setopt(curl, CURLOPT_SSLCERT, RECEIVER_SAE_CRT);
-        curl_easy_setopt(curl, CURLOPT_SSLKEY, RECEIVER_SAE_KEY);
+        // Request key to the KMS
 
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback_);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
+        struct MemoryStruct chunk;
+        chunk.memory = malloc(1);
+        chunk.size = 0;
 
-        res = curl_easy_perform(curl);
+        CURL *curl;
+        CURLcode res;
+        curl = curl_easy_init();
+        if (curl)
+        {
+            char url[256];
+            sprintf(url, "https://%s/api/v1/keys/%s/dec_keys?key_ID=%s", KMS_URI, r->other_player_sai_id, key_id);
 
-        if (res != CURLE_OK)
-            fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+            curl_easy_setopt(curl, CURLOPT_URL, url);
+            curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_3);
+            curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_3);
+            curl_easy_setopt(curl, CURLOPT_CAINFO, ROOT_CA);
+            curl_easy_setopt(curl, CURLOPT_SSLCERT, RECEIVER_SAE_CRT);
+            curl_easy_setopt(curl, CURLOPT_SSLKEY, RECEIVER_SAE_KEY);
 
-        curl_easy_cleanup(curl);
+            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback_);
+            curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
+
+            res = curl_easy_perform(curl);
+
+            if (res != CURLE_OK)
+                fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+
+            curl_easy_cleanup(curl);
+        }
+
+        json_t *root;
+        json_error_t error;
+        root = json_loads(chunk.memory, 0, &error);
+        if (!root)
+        {
+            fprintf(stderr, "error: on line %d: %s\n", error.line, error.text);
+            return 1;
+        }
+
+        json_t *keys_array = json_object_get(root, "keys");
+        if (!json_array_size(keys_array))
+        {
+            fprintf(stderr, "error: keys array is empty\n");
+            json_decref(root);
+            return 1;
+        }
+
+        json_t *key_obj = json_array_get(keys_array, 0);
+        if (!key_obj)
+        {
+            fprintf(stderr, "error: failed to get key at index 0\n");
+            json_decref(root);
+            return 1;
+        }
+
+        json_t *key_value = json_object_get(key_obj, "key");
+        if (!json_is_string(key_value))
+        {
+            fprintf(stderr, "error: key value is not a string\n");
+            json_decref(root);
+            return 1;
+        }
+
+        const char *key = json_string_value(key_value);
+        size_t key_len = json_string_length(key_value);
+
+        char *key_str = malloc(key_len + 1);
+        if (key_str == NULL)
+        {
+            perror("QOT ERROR: Failed to allocate memory for key.\n");
+            return 1;
+        }
+        memcpy(key_str, key, key_len);
+        key_str[key_len] = '\0';
+
+        // Decode key from base 64
+
+        size_t out_len = b64_decoded_size(key_str) + 1;
+        r->mem = malloc(out_len);
+        b64_decode(key_str, (unsigned char *)r->mem, out_len);
+
+        free(chunk.memory);
     }
-
-    json_t *root;
-    json_error_t error;
-    root = json_loads(chunk.memory, 0, &error);
-    if (!root)
-    {
-        fprintf(stderr, "error: on line %d: %s\n", error.line, error.text);
-        return 1;
-    }
-
-    json_t *keys_array = json_object_get(root, "keys");
-    if (!json_array_size(keys_array))
-    {
-        fprintf(stderr, "error: keys array is empty\n");
-        json_decref(root);
-        return 1;
-    }
-
-    json_t *key_obj = json_array_get(keys_array, 0);
-    if (!key_obj)
-    {
-        fprintf(stderr, "error: failed to get key at index 0\n");
-        json_decref(root);
-        return 1;
-    }
-
-    json_t *key_value = json_object_get(key_obj, "key");
-    if (!json_is_string(key_value))
-    {
-        fprintf(stderr, "error: key value is not a string\n");
-        json_decref(root);
-        return 1;
-    }
-
-    const char *key = json_string_value(key_value);
-    size_t key_len = json_string_length(key_value);
-
-    char *key_str = malloc(key_len + 1);
-    if (key_str == NULL)
-    {
-        perror("QOT ERROR: Failed to allocate memory for key.\n");
-        return 1;
-    }
-    memcpy(key_str, key, key_len);
-    key_str[key_len] = '\0';
-
-    // Decode key from base 64
-
-    size_t out_len = b64_decoded_size(key_str) + 1;
-    char *out = malloc(out_len);
-    b64_decode(key_str, (unsigned char *)out, out_len);
-    out[out_len] = '\0';
 
     // Save the key
 
-    unsigned int *bitsArray = (unsigned int *)malloc(512 * sizeof(unsigned int));
+    unsigned int *bitsArray = (unsigned int *)malloc(KEY_LENGTH * sizeof(unsigned int));
     if (bitsArray == NULL)
     {
         printf("Memory allocation failed\n");
@@ -201,11 +204,11 @@ void receiver_okd(OKDOT_RECEIVER *r)
         bitsArray[i] = 0;
     }
 
-    for (int i = 0; i < out_len - 1; i++)
+    for (int i = 0; i < KEY_LENGTH/8 - 1; i++)
     {
         for (int d = 0; d < 8; d++)
         {
-            bitsArray[i * 8 + d] = !!((out[i] << d) & 0x80);
+            bitsArray[i * 8 + d] = !!((r->mem[i] << d) & 0x80);
         }
     }
 
@@ -232,6 +235,9 @@ void receiver_okd(OKDOT_RECEIVER *r)
         }
         i++;
     }
+
+    r->counter += 1;
+    r->mem += KEY_LENGTH / 8;
 }
 
 void receiver_indexlist(OKDOT_RECEIVER *r)
