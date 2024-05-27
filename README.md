@@ -22,18 +22,23 @@ The universal hash function is done following the strategy presented in this [bl
 
 In `src/<format>/main_*.c`, there is a test execution of the sender and receiver programs, with the outputs being printed at the end.
 
-## Compilation 
+## Compilation & test
 
-First, make to set the location of the certificates for your SAE and the KMS URI. A simulated KMS can be found in [this repository](https://github.com/diogoftm/simulated-kms). 
+First, make sure to set the location of the certificates for your SAE and the KMS URI in the `ENV.sh` file.
 
-Then, to compile run:
+A simulated KMS that can be found in [this repository](https://github.com/diogoftm/simulated-kms).
+
+Then, setup the environment and compile:
 ```bash
+source ENV.sh
 make
 ```
 
-### Test
-
-To run a test executable, `uirotk_test` make sure that all certificates are set and that they match the specificated SAE ids, if not replace them with the right ones.
+To run the test executable:
+```bash
+`uirotk_test`
+```
+The tet program might not works out of the box because of the SAE IDs set previously, so make sure that all certificates are set and that they match the specificated SAE IDs in `src/ui_rotk/main_uirotk`, if not replace them with the right ones and compile it again.
 
 #### Remarks
 
