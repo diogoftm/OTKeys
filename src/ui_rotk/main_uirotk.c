@@ -21,7 +21,7 @@ int main()
 	r.other_player = 0;
 	strcpy(r.other_player_ip,  "127.0.0.1");
 	r.other_player_port = 5454;
-	strcpy(r.other_player_sai_id,  "sae_001");
+	strcpy(r.other_player_sai_id, "qkd//app1@aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
 	strcpy(r.my_ip, "127.0.0.1");
 	r.my_port = 5252;
 
@@ -29,7 +29,7 @@ int main()
 	s.my_num = 0;
 	s.other_player = 1;
 	strcpy(s.other_player_ip,  "127.0.0.1");
-	strcpy(s.other_player_sai_id,  "sae_002");
+	strcpy(s.other_player_sai_id,  "qkd//app2@bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
 	s.other_player_port = 5252;
 	strcpy(s.my_ip,  "127.0.0.1");
 	s.my_port = 5454;

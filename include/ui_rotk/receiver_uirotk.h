@@ -17,6 +17,10 @@
 #define RECEIVER_SAE_KEY "sae.key"
 #endif
 
+#ifndef RECEIVER_SAE_ID
+#define RECEIVER_SAE_ID ""
+#endif
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -37,7 +41,7 @@ extern "C"
 		int other_player;
 		char other_player_ip[16];
 		unsigned int other_player_port;
-		char other_player_sai_id[8];
+		char other_player_sai_id[64];
 
 		char *mem;
 		int counter;

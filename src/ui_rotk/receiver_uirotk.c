@@ -1,5 +1,6 @@
 #include "../../include/ui_rotk/receiver_uirotk.h"
-#include "../../include/ui_rotk/utils.h"
+#include "../../include/etsi_004/models.h"
+#include "../../include/etsi_004/ssl_socket_client.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -101,93 +102,57 @@ void receiver_okd(OKDOT_RECEIVER *r)
 {
     if (r->mem == NULL || r->counter >= KEY_MEM_SIZE)
     {
+        // ETSI 004 setup 
+        char *cert_pem = RECEIVER_SAE_CRT, *key_pem = RECEIVER_SAE_KEY;
+        char *peer_ca_pem = NULL;
+
+        char *host;
+        int port;
+        char input[] = KMS_URI;
+        char *token = strtok(input, ":");
+        if (token != NULL) {
+            host = token;
+
+            token = strtok(NULL, ":");
+            if (token != NULL) {
+                port = atoi(token);
+            } else {
+                fprintf(stderr, "Error: Port not found in the input string.\n");
+                return 1;
+            }
+        } else {
+            fprintf(stderr, "Error: Host not found in the input string.\n");
+            return 1;
+        }
+
+        int max_proto_version;
+        max_proto_version = 0;
+
+        qkd_client_context_data_t cfg = {host, port, cert_pem, key_pem, peer_ca_pem, max_proto_version};
+
         // Get key id from the other player
-        char *key_id = receive_key_id(r->my_ip, r->my_port + r->other_player + 1);
+        char *key_stream_id = receive_key_id(r->my_ip, r->my_port + r->other_player + 1);
 
-        // Request key to the KMS
+        // OPEN_CONNECT
+        char* source = RECEIVER_SAE_ID;
+        char* destination = r->other_player_sai_id;
+        qkd_qos_t qos = {KEY_MEM_SIZE * KEY_LENGTH / 8, 32, 32, 0, 0, 0, 0, "application/json"};
+        qkd_open_connect_request_t oc_request = {source, destination, qos, {}};
+        memcpy(oc_request.key_stream_id, key_stream_id, 16);
+        qkd_open_connect_response_t oc_response = qkd_open_connect_struct(oc_request, &cfg);
 
-        struct MemoryStruct chunk;
-        chunk.memory = malloc(1);
-        chunk.size = 0;
+        // GET_KEY
+        qkd_key_info_t key_info = {qkd_key_type_oblivious, qkd_key_type_role_receiver};
+        qkd_get_key_request_t gk_request = {{}, 0, (qkd_metadata_t) {sizeof(qkd_key_info_t), (void*)&key_info}};
+        uuid_copy(gk_request.key_stream_id, key_stream_id);
+        qkd_get_key_response_t gk_response = qkd_get_key_struct(gk_request, &cfg);
 
-        CURL *curl;
-        CURLcode res;
-        curl = curl_easy_init();
-        if (curl)
-        {
-            char url[256];
-            sprintf(url, "https://%s/api/v1/keys/%s/dec_keys?key_ID=%s", KMS_URI, r->other_player_sai_id, key_id);
+        // CLOSE
+        qkd_close_request_t cl_request = {.key_stream_id={}};
+        uuid_copy(cl_request.key_stream_id, oc_response.key_stream_id);
+        qkd_close_response_t cl_response = qkd_close_struct(cl_request, &cfg);
 
-            curl_easy_setopt(curl, CURLOPT_URL, url);
-            curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_3);
-            curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_3);
-            curl_easy_setopt(curl, CURLOPT_CAINFO, ROOT_CA);
-            curl_easy_setopt(curl, CURLOPT_SSLCERT, RECEIVER_SAE_CRT);
-            curl_easy_setopt(curl, CURLOPT_SSLKEY, RECEIVER_SAE_KEY);
-
-            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback_);
-            curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
-
-            res = curl_easy_perform(curl);
-
-            if (res != CURLE_OK)
-                fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-
-            curl_easy_cleanup(curl);
-        }
-
-        json_t *root;
-        json_error_t error;
-        root = json_loads(chunk.memory, 0, &error);
-        if (!root)
-        {
-            fprintf(stderr, "error: on line %d: %s\n", error.line, error.text);
-            return 1;
-        }
-
-        json_t *keys_array = json_object_get(root, "keys");
-        if (!json_array_size(keys_array))
-        {
-            fprintf(stderr, "error: keys array is empty\n");
-            json_decref(root);
-            return 1;
-        }
-
-        json_t *key_obj = json_array_get(keys_array, 0);
-        if (!key_obj)
-        {
-            fprintf(stderr, "error: failed to get key at index 0\n");
-            json_decref(root);
-            return 1;
-        }
-
-        json_t *key_value = json_object_get(key_obj, "key");
-        if (!json_is_string(key_value))
-        {
-            fprintf(stderr, "error: key value is not a string\n");
-            json_decref(root);
-            return 1;
-        }
-
-        const char *key = json_string_value(key_value);
-        size_t key_len = json_string_length(key_value);
-
-        char *key_str = malloc(key_len + 1);
-        if (key_str == NULL)
-        {
-            perror("QOT ERROR: Failed to allocate memory for key.\n");
-            return 1;
-        }
-        memcpy(key_str, key, key_len);
-        key_str[key_len] = '\0';
-
-        // Decode key from base 64
-
-        size_t out_len = b64_decoded_size(key_str) + 1;
-        r->mem = malloc(out_len);
-        b64_decode(key_str, (unsigned char *)r->mem, out_len);
-
-        free(chunk.memory);
+        r->mem = gk_response.key_buffer.data;
     }
 
     // Save the key
