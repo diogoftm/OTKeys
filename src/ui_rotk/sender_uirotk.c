@@ -83,6 +83,7 @@ void sender_okd(OKDOT_SENDER *s)
         char *host;
         int port;
         char input[] = KMS_URI;
+        printf("%s\n", KMS_URI);
         char *token = strtok(input, ":");
         if (token != NULL) {
             host = token;

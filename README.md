@@ -24,21 +24,24 @@ The universal hash function is done following the strategy presented in this [bl
 
 In `src/<format>/main_*.c`, there is a test execution of the sender and receiver programs, with the outputs being printed at the end.
 
-## Compilation 
+## Compilation & test
 
-First, make to set in the `makfile` the location of the certificates for your SAE, its ID and the KMS URI.
+First, update the `ENV.sh` file to have thw right location of the certificates, keys and ID for your SAE, and the KMS URI.
 
-You can generate a self-signed certificate in the `ssl` directory using the `generate_ca_and_selfsigned_cert` script. Nevertheless, this operation should be made on the KMS side.
+You can generate a self-signed certificate in the `ssl` directory using the `generate_ca_and_selfsigned_cert` script. Nevertheless, in a real scenario this operation should be made on the KMS side.
 
-Then, to compile run:
+Then, export the environment variables and compile:
 ```bash
+source ENV.sh
 make
 ```
 
-### Test
+To test run:
 ```bash
-`uirotk_test`.
+./uirotk_test
 ```
+It is expected that the first iteration the receiver gets the second index and in the second iteration the first.
+
 
 #### Remarks
 
