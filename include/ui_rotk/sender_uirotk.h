@@ -47,6 +47,9 @@ extern "C"
 		char *mem;
 		int counter;
 
+		char* ksid;
+		int key_index;
+
 		unsigned int sender_OTkey[KEY_LENGTH];
 	};
 

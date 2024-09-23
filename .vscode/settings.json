@@ -1,9 +1,0 @@
-{
-    "files.associations": {
-        "utils.h": "c",
-        "sender_uirotk.h": "c",
-        "string.h": "c",
-        "models.h": "c",
-        "copy.h": "c"
-    }
-}
