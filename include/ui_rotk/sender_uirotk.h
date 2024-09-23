@@ -27,7 +27,6 @@ extern "C"
 #define KEY_LENGTH 512
 #define KEY_MEM_SIZE 128
 #define OUTPUT_LENGTH 128
-	// #define PATH_MAX 8096
 
 	struct qot_sender
 	{
@@ -38,10 +37,13 @@ extern "C"
 		int other_player;
 		char other_player_ip[16];
 		unsigned int other_player_port;
-		char other_player_sai_id[8];
+		char other_player_sai_id[64];
 
 		char *mem;
 		int counter;
+
+		char *ksid;
+		int key_index;
 
 		unsigned int sender_OTkey[KEY_LENGTH];
 	};

@@ -37,7 +37,7 @@ extern "C"
 		int other_player;
 		char other_player_ip[16];
 		unsigned int other_player_port;
-		char other_player_sai_id[8];
+		char other_player_sai_id[64];
 
 		char *mem;
 		int counter;
@@ -45,6 +45,9 @@ extern "C"
 		unsigned int receiver_OTkey[KEY_LENGTH];
 		unsigned int receiver_OTauxkey[KEY_LENGTH];
 		unsigned int indexlist[2][KEY_LENGTH / 2];
+
+		char* ksid;
+		int key_index;
 	};
 
 	typedef struct qot_receiver OKDOT_RECEIVER;
