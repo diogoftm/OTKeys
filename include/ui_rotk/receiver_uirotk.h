@@ -54,7 +54,7 @@ extern "C"
 
 	void receiver_okd(OKDOT_RECEIVER *);											   // call OKD service and read the output key from text file
 	void receiver_indexlist(OKDOT_RECEIVER *);										   // define a pair of index lists based on the oblivious keys
-	void receiver_output(OKDOT_RECEIVER *, unsigned long long int *, unsigned char *); // set receiver output
+	void receiver_output(OKDOT_RECEIVER *, unsigned long long int *, unsigned int *); // set receiver output
 
 #ifdef __cplusplus
 }

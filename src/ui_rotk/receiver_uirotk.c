@@ -264,7 +264,7 @@ void receiver_indexlist(OKDOT_RECEIVER *r)
     }
 }
 
-void receiver_output(OKDOT_RECEIVER *r, unsigned long long int *vb, unsigned char *output)
+void receiver_output(OKDOT_RECEIVER *r, unsigned long long int *vb, unsigned int *output)
 {
     unsigned long int input32[KEY_LENGTH / (2 * 32)] = {0};
 
@@ -281,6 +281,6 @@ void receiver_output(OKDOT_RECEIVER *r, unsigned long long int *vb, unsigned cha
     /*hashes pairs of ints from the input32 array into another 32bit value, which is stored in the output array*/
     for (int i = 0; i < OUTPUT_LENGTH / 32; i++)
     {
-        output[i] = (unsigned long int)((vb[0 + 3 * i] * input32[0 + 2 * i] + vb[1 + 3 * i] * input32[1 + 2 * i] + vb[2 + 3 * i]) >> 32);
+        output[i] = (unsigned int)((vb[0 + 3 * i] * input32[0 + 2 * i] + vb[1 + 3 * i] * input32[1 + 2 * i] + vb[2 + 3 * i]) >> 32);
     }
 }

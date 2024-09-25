@@ -38,14 +38,6 @@ make
 
 To run the test executable:
 ```bash
-`uirotk_test`
+./uirotk_test
 ```
 The tet program might not works out of the box because of the SAE IDs set previously, so make sure that all certificates are set and that they match the specificated SAE IDs in `src/ui_rotk/main_uirotk`, if not replace them with the right ones and compile it again.
-
-#### Remarks
-
-We are considering that the oblivious key length is 512, and the OT output length is 128. These values were chosen because of the OT length used in the libscapi/MASCOT, and also because of the relation between these lengths that is required for security.
-
-These lengths are defined in the sender and receiver header files, and might be changed if needed. Note, however, that the hash function is written such that it generates outputs with half the size of the input (the hash function input size is always half of the oblivious key length! In this case, the hash function input size is 256 and the hash function output size is 128). Hence, depending on the desired oblivious key length and OT output length, you might need to change the way that the hash function is written (you can find it in the last loop of the `receiver_output` and `sender_output` functions).
-
-In this project, there are two folders named `libscapi_files` and `mascot_files`. In those folders, there are the adaptations of the Libscapi/MASCOT makefile (which links the `lib<format>.a` library when compiling the Libscapi/MASCOT) and also of the `BaseOT.cpp` file. This last file contains the method for doing base OTs for Libscapi/MASCOT. In the original Libscapi/MASCOT implementation, these OTs are done using the SimpleOT protocol. With this new version of the BaseOT file, the OTs will be done using the Quantum Random OT that we implemented. 
