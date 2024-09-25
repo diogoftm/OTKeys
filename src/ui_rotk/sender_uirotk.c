@@ -102,7 +102,7 @@ void sender_okd(OKDOT_SENDER *s)
 }
 
 void sender_output(OKDOT_SENDER *s, unsigned long long int *v0, unsigned long long int *v1, unsigned int *indexb,
-                   unsigned int *indexb1, unsigned char (*output)[OUTPUT_LENGTH / 32])
+                   unsigned int *indexb1, unsigned int (*output)[OUTPUT_LENGTH / 32])
 {
     unsigned long int input32b[KEY_LENGTH / (2 * 32)] = {0};
     unsigned long int input32b1[KEY_LENGTH / (2 * 32)] = {0};
@@ -123,7 +123,7 @@ void sender_output(OKDOT_SENDER *s, unsigned long long int *v0, unsigned long lo
     // hashes pairs of ints from the input32b and intput32b1 arrays into another 32bit value, which is then stored in the output array
     for (int i = 0; i < OUTPUT_LENGTH / 32; i++)
     {
-        output[0][i] = (unsigned long int)((v0[0 + 3 * i] * input32b[0 + 2 * i] + v0[1 + 3 * i] * input32b[1 + 2 * i] + v0[2 + 3 * i]) >> 32);
-        output[1][i] = (unsigned long int)((v1[0 + 3 * i] * input32b1[0 + 2 * i] + v1[1 + 3 * i] * input32b1[1 + 2 * i] + v1[2 + 3 * i]) >> 32);
+        output[0][i] = (unsigned int)((v0[0 + 3 * i] * input32b[0 + 2 * i] + v0[1 + 3 * i] * input32b[1 + 2 * i] + v0[2 + 3 * i]) >> 32);
+        output[1][i] = (unsigned int)((v1[0 + 3 * i] * input32b1[0 + 2 * i] + v1[1 + 3 * i] * input32b1[1 + 2 * i] + v1[2 + 3 * i]) >> 32);
     }
 }

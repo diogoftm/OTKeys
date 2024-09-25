@@ -35,8 +35,8 @@ int main()
 	s.other_player_port = 5252;
 	strcpy(s.my_ip, "127.0.0.1");
 	s.my_port = 5454;
-	unsigned char sender_out[2][OUTPUT_LENGTH / 32]; // array to store sender's output
-	unsigned char receiver_out[OUTPUT_LENGTH / 32];	 // array to store receiver's output
+	unsigned int sender_out[2][OUTPUT_LENGTH / 32]; // array to store sender's output
+	unsigned int receiver_out[OUTPUT_LENGTH / 32];	 // array to store receiver's output
 
 	unsigned char receiver_in = 1; // receiver choice bit
 
