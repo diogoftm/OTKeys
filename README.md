@@ -9,10 +9,7 @@ In the `main` branch there's the version of the protocol that uses oblivious key
 
 In this branch (`etsi_004`) there's the version of the protocol that uses oblivious key retrieved from a quantum Key Management System (KMS) following the [ETSI QKD 004](https://www.etsi.org/deliver/etsi_gs/QKD/001_099/004/02.01.01_60/gs_qkd004v020101p.pdf) standard from [this](https://forge.etsi.org/rep/qkd/gs004-app-int/-/tree/edition3?ref_type=heads) reference implementation.
 
-In `simulated_ok_gen` a version using a local key generator simulator can be found. 
-
-## Authors
-Diogo Matos (Instituto de Telecomunições - IT) extended from the work done by Mariana Gama and Manuel B Santos (University of Lisbon - IST).
+In the `simulated_ok_gen` branch a version using a local key generator simulator can be found. 
 
 ## Implementation
 
@@ -20,13 +17,11 @@ This implementation is divided in two different programs, one for the sender and
 Each of the programs contains a structure for storing the relevant data for each party, as well as a set of functions.
 These functions are called from a main program and perform the local operations to be done by each party. 
 
-The universal hash function is done following the strategy presented in this [blog](https://lemire.me/blog/2018/08/15/fast-strongly-universal-64-bit-hashing-everywhere/)
-
 In `src/<format>/main_*.c`, there is a test execution of the sender and receiver programs, with the outputs being printed at the end.
 
 ## Compilation & test
 
-First, update the `ENV.sh` file to have thw right location of the certificates, keys and ID for your SAE, and the KMS URI.
+First, update the `ENV.sh` file to have the right location of the certificates, keys and ID for your SAE, and the KMS URI.
 
 You can generate a self-signed certificate in the `ssl` directory using the `generate_ca_and_selfsigned_cert` script. Nevertheless, in a real scenario this operation should be made on the KMS side.
 
@@ -40,5 +35,3 @@ To test run:
 ```bash
 ./uirotk_test
 ```
-It is expected that the first iteration the receiver gets the second index and in the second iteration the first.
-

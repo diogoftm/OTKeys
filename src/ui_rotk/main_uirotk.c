@@ -23,20 +23,26 @@ int main()
 	r.other_player = 0;
 	strcpy(r.other_player_ip, "127.0.0.1");
 	r.other_player_port = 5454;
-	strcpy(r.other_player_sai_id, "raw://app1@aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
-	strcpy(r.my_ip, "127.0.0.1");
+	strcpy(r.other_player_sai_id, "qkd//app1@aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");	// update accordingly
+	r.ksid = "eca294a5-d5eb-4b1d-80a6-4db34190392c";	// update accordingly
+	r.key_index = 1;	// update accordingly
 	r.my_port = 5252;
+	strcpy(r.my_ip, "127.0.0.1");
+	r.mem = NULL;
 
 	OKDOT_SENDER s;
 	s.my_num = 0;
 	s.other_player = 1;
 	strcpy(s.other_player_ip, "127.0.0.1");
-	strcpy(s.other_player_sai_id, "raw://app2@bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+	strcpy(s.other_player_sai_id, "qkd//app2@bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");	// update accordingly
+	s.ksid = "eca294a5-d5eb-4b1d-80a6-4db34190392c";	// update accordingly
+	s.key_index = 1;	// update accordingly
 	s.other_player_port = 5252;
 	strcpy(s.my_ip, "127.0.0.1");
 	s.my_port = 5454;
-	unsigned int sender_out[2][OUTPUT_LENGTH / 32]; // array to store sender's output
-	unsigned int receiver_out[OUTPUT_LENGTH / 32];	 // array to store receiver's output
+	s.mem = NULL;
+	unsigned int sender_out[2][KEY_LENGTH / 64];
+	unsigned int receiver_out[KEY_LENGTH / 64];
 
 	unsigned char receiver_in = 1; // receiver choice bit
 
@@ -81,16 +87,17 @@ int main()
 
 	sender_output(&s, v[0], v[1], r.indexlist[receiver_in], r.indexlist[(receiver_in) ^ 0x1], sender_out);
 
-	for (int i = 0; i < OUTPUT_LENGTH / 32; i++)
+	for (int i = 0; i < KEY_LENGTH / 64; i++)
 		printf("Sender's output 0: %x   Sender's output 1: %x  \n", sender_out[0][i], sender_out[1][i]);
 	printf("\n\n");
 
 	receiver_output(&r, v[receiver_in], receiver_out);
 
-	for (int i = 0; i < OUTPUT_LENGTH / 32; i++)
+	for (int i = 0; i < KEY_LENGTH / 64; i++)
 		printf("Receiver's output: %x  \n", receiver_out[i]);
 	printf("\n\n");
 
+	
 	receiver_in = 0;
 
 	pthread_create(&thread1, NULL, sender_thread, (void *)&s);
@@ -100,14 +107,14 @@ int main()
 	receiver_indexlist(&r);
 
 	sender_output(&s, v[0], v[1], r.indexlist[receiver_in], r.indexlist[(receiver_in) ^ 0x1], sender_out);
-	for (int i = 0; i < OUTPUT_LENGTH / 32; i++)
+	for (int i = 0; i < KEY_LENGTH / 64; i++)
 		printf("Sender's output 0: %x   Sender's output 1: %x  \n", sender_out[0][i], sender_out[1][i]);
 	printf("\n\n");
 
 	receiver_output(&r, v[receiver_in], receiver_out);
-	for (int i = 0; i < OUTPUT_LENGTH / 32; i++)
+	for (int i = 0; i < KEY_LENGTH / 64; i++)
 		printf("Receiver's output %x  \n", receiver_out[i]);
 	printf("\n\n");
-
+	
 	return 0;
 }

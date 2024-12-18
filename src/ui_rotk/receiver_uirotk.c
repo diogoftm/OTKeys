@@ -66,6 +66,7 @@ void receiver_okd(OKDOT_RECEIVER *r)
         }
 
         r->mem = gk_response.key_buffer.data;
+        r->counter = 0;
     }
 
     // Save the key
@@ -77,12 +78,12 @@ void receiver_okd(OKDOT_RECEIVER *r)
         return 1;
     }
 
-    for (int i = 0; i < 512; i++)
+    for (int i = 0; i < KEY_LENGTH; i++)
     {
         bitsArray[i] = 0;
     }
 
-    for (int i = 0; i < KEY_LENGTH / 8 - 1; i++)
+    for (int i = 0; i < KEY_LENGTH / 8; i++)
     {
         for (int d = 0; d < 8; d++)
         {
@@ -144,21 +145,18 @@ void receiver_indexlist(OKDOT_RECEIVER *r)
 
 void receiver_output(OKDOT_RECEIVER *r, unsigned long long int *vb, unsigned int *output)
 {
-    unsigned long int input32[KEY_LENGTH / (2 * 32)] = {0};
 
-    // converts the binary hash inputs into 32bit ints
-    for (int i = 0; i < 32; i++)
+    unsigned int input32[KEY_LENGTH / (2 * 32)] = {0};
+
+    for (int k = 0; k < KEY_LENGTH / 2; k++)
     {
-        for (int j = 0; j < KEY_LENGTH / (2 * 32); j++)
-        {
-            input32[j] <<= 1;
-            input32[j] += r->receiver_OTkey[r->indexlist[0][i + j * 32]] - '0';
-        }
+        int index = r->indexlist[0][k];
+        input32[k / 32] <<= 1;
+        input32[k / 32] += r->receiver_OTkey[index] - '0';
     }
 
-    // hashes pairs of ints from the input32 array into another 32bit value, which is stored in the output array
-    for (int i = 0; i < OUTPUT_LENGTH / 32; i++)
+    for (int i = 0; i < KEY_LENGTH / 64; i++)
     {
-        output[i] = (unsigned int)((vb[0 + 3 * i] * input32[0 + 2 * i] + vb[1 + 3 * i] * input32[1 + 2 * i] + vb[2 + 3 * i]) >> 32);
+        output[i] = (unsigned int)(((vb[3 * i] - (1 - vb[3 * i] % 2)) * input32[2 * i] + ((vb[1 + 3 * i] - (1 - vb[3 * i] % 2)))) >> 32);
     }
 }

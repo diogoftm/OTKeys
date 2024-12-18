@@ -68,6 +68,7 @@ void sender_okd(OKDOT_SENDER *s)
         }
 
         s->mem = gk_response.key_buffer.data;
+        s->counter = 0;
     }
 
     // Save the key
@@ -84,7 +85,7 @@ void sender_okd(OKDOT_SENDER *s)
         bitsArray[i] = 0;
     }
 
-    for (int i = 0; i < KEY_LENGTH / 8 - 1; i++)
+    for (int i = 0; i < KEY_LENGTH / 8; i++)
     {
         for (int d = 0; d < 8; d++)
         {
@@ -102,28 +103,23 @@ void sender_okd(OKDOT_SENDER *s)
 }
 
 void sender_output(OKDOT_SENDER *s, unsigned long long int *v0, unsigned long long int *v1, unsigned int *indexb,
-                   unsigned int *indexb1, unsigned int (*output)[OUTPUT_LENGTH / 32])
+                   unsigned int *indexb1, unsigned int (*output)[KEY_LENGTH / 64])
 {
-    unsigned long int input32b[KEY_LENGTH / (2 * 32)] = {0};
-    unsigned long int input32b1[KEY_LENGTH / (2 * 32)] = {0};
+    unsigned int input32b[KEY_LENGTH / (2 * 32)] = {0};
+    unsigned int input32b1[KEY_LENGTH / (2 * 32)] = {0};
 
-    // converts the binary hash inputs into 32bit ints
-    for (int i = 0; i < 32; i++)
+    for (int k = 0; k < KEY_LENGTH / 2; k++)
     {
-        for (int j = 0; j < KEY_LENGTH / (2 * 32); j++)
-        {
-            input32b[j] <<= 1;
-            input32b1[j] <<= 1;
+        input32b[k / 32] <<= 1;
+        input32b1[k / 32] <<= 1;
 
-            input32b[j] += s->sender_OTkey[indexb[i + j * 32]] - '0';
-            input32b1[j] += s->sender_OTkey[indexb1[i + j * 32]] - '0';
-        }
+        input32b[k / 32] += s->sender_OTkey[indexb[k]] - '0';
+        input32b1[k / 32] += s->sender_OTkey[indexb1[k]] - '0';
     }
 
-    // hashes pairs of ints from the input32b and intput32b1 arrays into another 32bit value, which is then stored in the output array
-    for (int i = 0; i < OUTPUT_LENGTH / 32; i++)
+    for (int i = 0; i < KEY_LENGTH / 64; i++)
     {
-        output[0][i] = (unsigned int)((v0[0 + 3 * i] * input32b[0 + 2 * i] + v0[1 + 3 * i] * input32b[1 + 2 * i] + v0[2 + 3 * i]) >> 32);
-        output[1][i] = (unsigned int)((v1[0 + 3 * i] * input32b1[0 + 2 * i] + v1[1 + 3 * i] * input32b1[1 + 2 * i] + v1[2 + 3 * i]) >> 32);
+        output[0][i] = (unsigned int)(((v0[3 * i] - (1 - v0[3 * i] % 2)) * input32b[2 * i] + (v0[1 + 3 * i] - (1 - v0[1 + 3 * i] % 2))) >> 32);
+        output[1][i] = (unsigned int)(((v1[3 * i] - (1 - v1[3 * i] % 2)) * input32b1[2 * i] + (v1[1 + 3 * i] - (1 - v1[1 + 3 * i] % 2))) >> 32);
     }
 }
