@@ -9,20 +9,13 @@ In the `main` branch there's the version of the protocol that uses oblivious key
 
 In the `etsi_004` branch there's the version of the protocol that uses oblivious key retrieved from a quantum Key Management System (KMS) following the [ETSI QKD 004](https://www.etsi.org/deliver/etsi_gs/QKD/001_099/004/02.01.01_60/gs_qkd004v020101p.pdf) standard from [this](https://forge.etsi.org/rep/qkd/gs004-app-int/-/tree/edition3?ref_type=heads) reference implementation.
 
-In `simulated_ok_gen` a version using a local key generator simulator can be found. 
-
-## Authors
-Adapted by Diogo Matos (Instituto de Telecomunições - IT) from the work done by Mariana Gama and Manuel B Santos (University of Lisbon - IST).
+In the `simulated_ok_gen` branch a version using a local key generator simulator can be found. 
 
 ## Implementation
 
 This implementation is divided in two different programs, one for the sender and another for the receiver.
 Each of the programs contains a structure for storing the relevant data for each party, as well as a set of functions.
-These functions are called from a main program and perform the local operations to be done by each party. 
-
-The universal hash function is done following the strategy presented in this [blog](https://lemire.me/blog/2018/08/15/fast-strongly-universal-64-bit-hashing-everywhere/)
-
-In `src/<format>/main_*.c`, there is a test execution of the sender and receiver programs, with the outputs being printed at the end.
+These functions are called from a main program and perform the local operations to be done by each party.
 
 ## Compilation & test
 
@@ -40,4 +33,4 @@ To run the test executable:
 ```bash
 ./uirotk_test
 ```
-The tet program might not works out of the box because of the SAE IDs set previously, so make sure that all certificates are set and that they match the specificated SAE IDs in `src/ui_rotk/main_uirotk`, if not replace them with the right ones and compile it again.
+The test program might not work out of the box because of the SAE IDs set previously, so make sure that all certificates are set and that they match the specified SAE IDs in `src/ui_rotk/main_uirotk.c`
