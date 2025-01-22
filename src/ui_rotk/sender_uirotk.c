@@ -62,7 +62,7 @@ void sender_okd(OKDOT_SENDER *s)
 
         while (res_status != 0)
         {
-            sleep(0.5);
+            sleep(1);
             gk_response = qkd_get_key_struct(gk_request, &cfg);
             res_status = gk_response.status;
         }
@@ -119,7 +119,7 @@ void sender_output(OKDOT_SENDER *s, unsigned long long int *v0, unsigned long lo
 
     for (int i = 0; i < KEY_LENGTH / 64; i++)
     {
-        output[0][i] = (unsigned int)(((v0[3 * i] - (1 - v0[3 * i] % 2)) * input32b[2 * i] + (v0[1 + 3 * i] - (1 - v0[1 + 3 * i] % 2))) >> 32);
-        output[1][i] = (unsigned int)(((v1[3 * i] - (1 - v1[3 * i] % 2)) * input32b1[2 * i] + (v1[1 + 3 * i] - (1 - v1[1 + 3 * i] % 2))) >> 32);
+        output[0][i] = (unsigned int)(((v0[i] - (1 - v0[i] % 2)) * input32b[i] + (v0[i] - (1 - v0[i] % 2))) >> 32);
+        output[1][i] = (unsigned int)(((v1[i] - (1 - v1[i] % 2)) * input32b1[i] + (v1[i] - (1 - v1[i] % 2))) >> 32);
     }
 }

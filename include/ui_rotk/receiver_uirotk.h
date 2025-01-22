@@ -28,8 +28,8 @@ extern "C"
 
 #include <stdio.h>
 
-#define KEY_LENGTH 64
-#define KEY_MEM_SIZE 128
+#define KEY_LENGTH 256
+#define KEY_MEM_SIZE 64
 
 	struct qot_receiver
 	{
@@ -49,14 +49,14 @@ extern "C"
 		unsigned int receiver_OTauxkey[KEY_LENGTH];
 		unsigned int indexlist[2][KEY_LENGTH / 2];
 
-		char* ksid;
+		char *ksid;
 		int key_index;
 	};
 
 	typedef struct qot_receiver OKDOT_RECEIVER;
 
-	void receiver_okd(OKDOT_RECEIVER *);											   // call OKD service and read the output key from text file
-	void receiver_indexlist(OKDOT_RECEIVER *);										   // define a pair of index lists based on the oblivious keys
+	void receiver_okd(OKDOT_RECEIVER *);											  // call OKD service and read the output key from text file
+	void receiver_indexlist(OKDOT_RECEIVER *);										  // define a pair of index lists based on the oblivious keys
 	void receiver_output(OKDOT_RECEIVER *, unsigned long long int *, unsigned int *); // set receiver output
 
 #ifdef __cplusplus
