@@ -24,7 +24,7 @@ extern "C"
 
 #include <stdio.h>
 
-#define KEY_LENGTH 64
+#define KEY_LENGTH 256
 #define KEY_MEM_SIZE 128
 
 	struct qot_receiver

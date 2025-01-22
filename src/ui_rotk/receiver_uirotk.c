@@ -281,6 +281,6 @@ void receiver_output(OKDOT_RECEIVER *r, unsigned long long int *vb, unsigned int
 
     for (int i = 0; i < KEY_LENGTH / 64; i++)
     {
-        output[i] = (unsigned int)(((vb[3 * i] - (1 - vb[3 * i] % 2)) * input32[2 * i] + ((vb[1 + 3 * i] - (1 - vb[3 * i] % 2)))) >> 32);
+        output[i] = (unsigned int)(((vb[i] - (1 - vb[i] % 2)) * input32[i] + (vb[i] - (1 - vb[i] % 2))) >> 32);
     }
 }
