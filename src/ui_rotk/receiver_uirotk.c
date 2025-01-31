@@ -201,7 +201,7 @@ void receiver_okd(OKDOT_RECEIVER *r)
         return 1;
     }
 
-    for (int i = 0; i < 512; i++)
+    for (int i = 0; i < KEY_LENGTH; i++)
     {
         bitsArray[i] = 0;
     }
