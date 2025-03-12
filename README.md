@@ -21,7 +21,7 @@ In `src/<format>/main_*.c`, there is a test execution of the sender and receiver
 
 ## Compilation & test
 
-First, update the `ENV.sh` file to have the right location of the certificates, keys and ID for your SAE, and the KMS URI.
+First, update the `ENV.sh` file to have the right location of the certificates, keys and ID for your SAE, the KMS URI, and a strict role for the key requesting in case there only one source of keys with a specific role. 
 
 You can generate a self-signed certificate in the `ssl` directory using the `generate_ca_and_selfsigned_cert` script. Nevertheless, in a real scenario this operation should be made on the KMS side.
 

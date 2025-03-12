@@ -51,7 +51,12 @@ void receiver_okd(OKDOT_RECEIVER *r)
         qkd_client_context_data_t cfg = {host, port, cert_pem, key_pem, peer_ca_pem, max_proto_version};
 
         // GET_KEY
-        qkd_key_info_t key_info = {qkd_key_type_oblivious, qkd_key_type_role_receiver};
+        char role = qkd_key_type_role_receiver;
+        
+        if (strcmp(RECEIVER_STRICT_ROLE, "tx") == 0){
+            role = qkd_key_type_role_sender;
+        }
+        qkd_key_info_t key_info = {qkd_key_type_oblivious, role};
         qkd_get_key_request_t gk_request = {{}, r->key_index, (qkd_metadata_t){sizeof(qkd_key_info_t), (void *)&key_info}};
         uuid_parse(r->ksid, gk_request.key_stream_id);
         qkd_get_key_response_t gk_response = qkd_get_key_struct(gk_request, &cfg);
@@ -87,7 +92,11 @@ void receiver_okd(OKDOT_RECEIVER *r)
     {
         for (int d = 0; d < 8; d++)
         {
-            bitsArray[i * 8 + d] = !!((r->mem[i] << d) & 0x80);
+            if (strcmp(RECEIVER_STRICT_ROLE, "tx") != 0) bitsArray[i * 8 + d] = !!((r->mem[i] << d) & 0x80);
+            else {
+                if (d % 2 == 0) bitsArray[i * 8 + d] = !!(((r->mem[i] << (d+1)) ^ (r->mem[i] << (d))) & 0x80);
+                else bitsArray[i * 8 + d] = !!((r->mem[i] << (d-1)) & 0x80);
+            }
         }
     }
 
