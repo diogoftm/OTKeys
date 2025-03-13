@@ -36,8 +36,40 @@ size_t write_callback_(void *ptr, size_t size, size_t nmemb, void *userdata)
     return realsize;
 }
 
+// Send key id to the other player
+void send_key_id_(char *key_id, char *other_player_ip, unsigned int other_player_port)
+{
+    int sock = 0;
+    struct sockaddr_in serv_addr;
+    char buffer[1024] = {0};
+
+    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+    {
+        fprintf(stderr, "error: Socket creation error\n");
+        return -1;
+    }
+
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_port = htons(other_player_port);
+
+    if (inet_pton(AF_INET, other_player_ip, &serv_addr.sin_addr) <= 0)
+    {
+        fprintf(stderr, "error: Invalid address \n");
+        return -1;
+    }
+
+    // Wait until the other player is available
+    // Todo: add max tries
+    while (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
+    {
+        sleep(1);
+    }
+
+    send(sock, key_id, strlen(key_id), 0);
+}
+
 // Get key id from the other player
-char *receive_key_id(char *my_ip, unsigned int my_port)
+char *receive_key_id_(char *my_ip, unsigned int my_port)
 {
     int server_fd, new_socket;
     ssize_t valread;
@@ -101,9 +133,6 @@ void receiver_okd(OKDOT_RECEIVER *r)
 {
     if (r->mem == NULL || r->counter >= KEY_MEM_SIZE)
     {
-        // Get key id from the other player
-        char *key_id = receive_key_id(r->my_ip, r->my_port + r->other_player + 1);
-
         // Request key to the KMS
 
         struct MemoryStruct chunk;
@@ -116,7 +145,13 @@ void receiver_okd(OKDOT_RECEIVER *r)
         if (curl)
         {
             char url[256];
-            sprintf(url, "https://%s/api/v1/keys/%s/dec_keys?key_ID=%s", KMS_URI, r->other_player_sai_id, key_id);
+            if(strcmp(RECEIVER_STRICT_ROLE, "tx") == 0){
+                sprintf(url, "https://%s/api/v1/keys/%s/enc_keys?number=1&size=%d&key_type=1", KMS_URI, r->other_player_sai_id, KEY_MEM_SIZE * KEY_LENGTH);
+            } else{
+                // Get key id from the other player
+                char *key_id = receive_key_id_(r->my_ip, r->my_port + r->other_player + 1);
+                sprintf(url, "https://%s/api/v1/keys/%s/dec_keys?key_ID=%s", KMS_URI, r->other_player_sai_id, key_id);
+            }
 
             curl_easy_setopt(curl, CURLOPT_URL, url);
             curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_3);
@@ -169,6 +204,16 @@ void receiver_okd(OKDOT_RECEIVER *r)
             return 1;
         }
 
+        json_t *key_id_value = json_object_get(key_obj, "key_ID");
+        if (!json_is_string(key_id_value))
+        {
+            fprintf(stderr, "error: key_ID value is not a string\n");
+            json_decref(root);
+            return 1;
+        }
+
+        const char *key_id = json_string_value(key_id_value);
+
         const char *key = json_string_value(key_value);
         size_t key_len = json_string_length(key_value);
 
@@ -186,6 +231,8 @@ void receiver_okd(OKDOT_RECEIVER *r)
         size_t out_len = b64_decoded_size(key_str) + 1;
         r->mem = malloc(out_len);
         b64_decode(key_str, (unsigned char *)r->mem, out_len);
+
+        if(strcmp(RECEIVER_STRICT_ROLE, "tx") == 0) send_key_id(key_id, r->other_player_ip, r->other_player_port + r->my_num + 1);
 
         free(chunk.memory);
 
@@ -210,7 +257,11 @@ void receiver_okd(OKDOT_RECEIVER *r)
     {
         for (int d = 0; d < 8; d++)
         {
-            bitsArray[i * 8 + d] = !!((r->mem[i] << d) & 0x80);
+            if (strcmp(RECEIVER_STRICT_ROLE, "tx") != 0) bitsArray[i * 8 + d] = !!((r->mem[i] << d) & 0x80);
+            else {
+                if (d % 2 == 0) bitsArray[i * 8 + d] = !!(((r->mem[i] << (d+1)) ^ (r->mem[i] << (d))) & 0x80);
+                else bitsArray[i * 8 + d] = !!((r->mem[i] << (d-1)) & 0x80);
+            }
         }
     }
 

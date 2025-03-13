@@ -17,6 +17,10 @@
 #define SENDER_SAE_KEY "sae.key"
 #endif
 
+#ifndef SENDER_STRICT_ROLE
+#define SENDER_STRICT_ROLE ""
+#endif
+
 #ifdef __cplusplus
 extern "C"
 {

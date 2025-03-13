@@ -17,6 +17,10 @@
 #define RECEIVER_SAE_KEY "sae.key"
 #endif
 
+#ifndef RECEIVER_STRICT_ROLE
+#define RECEIVER_STRICT_ROLE ""
+#endif
+
 #ifdef __cplusplus
 extern "C"
 {

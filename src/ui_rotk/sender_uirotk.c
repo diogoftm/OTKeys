@@ -8,6 +8,7 @@
 #include <openssl/bio.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <asm-generic/socket.h>
 
 struct MemoryStruct
 {
@@ -33,6 +34,67 @@ size_t write_callback(void *ptr, size_t size, size_t nmemb, void *userdata)
     mem->memory[mem->size] = 0;
 
     return realsize;
+}
+
+// Get key id from the other player
+char *receive_key_id(char *my_ip, unsigned int my_port)
+{
+    int server_fd, new_socket;
+    ssize_t valread;
+    struct sockaddr_in address;
+    int opt = 1;
+    socklen_t addrlen = sizeof(address);
+    char *buffer = (char *)malloc(1024);
+
+    if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+    {
+        perror("socket failed");
+        exit(EXIT_FAILURE);
+    }
+
+    if (setsockopt(server_fd, SOL_SOCKET,
+                   SO_REUSEADDR | SO_REUSEPORT, &opt,
+                   sizeof(opt)))
+    {
+        perror("setsockopt");
+        exit(EXIT_FAILURE);
+    }
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = inet_addr(my_ip);
+    address.sin_port = htons(my_port);
+
+    if (bind(server_fd, (struct sockaddr *)&address,
+             sizeof(address)) < 0)
+    {
+        perror("bind failed");
+        exit(EXIT_FAILURE);
+    }
+    if (listen(server_fd, 3) < 0)
+    {
+        perror("listen");
+        exit(EXIT_FAILURE);
+    }
+    if ((new_socket = accept(server_fd, (struct sockaddr *)&address,
+                             &addrlen)) < 0)
+    {
+        perror("accept");
+        exit(EXIT_FAILURE);
+    }
+
+    valread = read(new_socket, buffer, 1024 - 1);
+    if (valread < 0)
+    {
+        perror("read");
+        free(buffer);
+        exit(EXIT_FAILURE);
+    }
+
+    buffer[valread] = '\0';
+
+    close(new_socket);
+    close(server_fd);
+
+    return buffer;
 }
 
 // Send key id to the other player
@@ -77,7 +139,6 @@ void sender_okd(OKDOT_SENDER *s)
         chunk.memory = malloc(1);
         if (chunk.memory == NULL) {
             fprintf(stderr, "Failed to allocate memory\n");
-            // Handle error appropriately, e.g., return from the function or exit the program
         }
         chunk.size = 0;
 
@@ -87,7 +148,13 @@ void sender_okd(OKDOT_SENDER *s)
         if (curl)
         {
             char url[256];
-            sprintf(url, "https://%s/api/v1/keys/%s/enc_keys?number=1&size=%d&key_type=1", KMS_URI, s->other_player_sai_id, KEY_MEM_SIZE * KEY_LENGTH);
+            if(strcmp(SENDER_STRICT_ROLE, "rx") == 0){
+                // Get key id from the other player
+                char *key_id = receive_key_id(s->my_ip, s->my_port + s->other_player + 1);
+                sprintf(url, "https://%s/api/v1/keys/%s/dec_keys?key_ID=%s", KMS_URI, s->other_player_sai_id, key_id);
+            } else{
+                sprintf(url, "https://%s/api/v1/keys/%s/enc_keys?number=1&size=%d&key_type=1", KMS_URI, s->other_player_sai_id, KEY_MEM_SIZE * KEY_LENGTH);
+            }
 
             curl_easy_setopt(curl, CURLOPT_URL, url);
             curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_3);
@@ -167,8 +234,7 @@ void sender_okd(OKDOT_SENDER *s)
         b64_decode(key_str, (unsigned char *)s->mem, out_len);
 
         // Send key id to the other player
-
-        send_key_id(key_id, s->other_player_ip, s->other_player_port + s->my_num + 1);
+        if(strcmp(SENDER_STRICT_ROLE, "rx") != 0) send_key_id(key_id, s->other_player_ip, s->other_player_port + s->my_num + 1);
 
         free(chunk.memory);
 
@@ -193,7 +259,11 @@ void sender_okd(OKDOT_SENDER *s)
     {
         for (int d = 0; d < 8; d++)
         {
-            bitsArray[i * 8 + d] = !!((s->mem[i] << d) & 0x80);
+            if (strcmp(SENDER_STRICT_ROLE, "rx") != 0) bitsArray[i * 8 + d] = !!((s->mem[i] << d) & 0x80);
+            else {
+                if (d % 2 == 0) bitsArray[i * 8 + d] = !!((s->mem[i] << (d+1)) & 0x80);
+                else bitsArray[i * 8 + d] = !!(((s->mem[i] << d) ^ (s->mem[i] << (d - 1))) & 0x80);
+            }
         }
     }
 
