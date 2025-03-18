@@ -21,10 +21,6 @@
 #define RECEIVER_SAE_ID ""
 #endif
 
-#ifndef RECEIVER_STRICT_ROLE
-#define RECEIVER_STRICT_ROLE ""
-#endif
-
 #ifdef __cplusplus
 extern "C"
 {

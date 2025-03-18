@@ -13,6 +13,10 @@
 
 void receiver_okd(OKDOT_RECEIVER *r)
 {
+    const char* receiver_strict_role = getenv("RECEIVER_STRICT_ROLE");
+
+    if (receiver_strict_role == NULL) receiver_strict_role = "";
+
     // Get key from the KMS
     if (r->mem == NULL || r->counter >= KEY_MEM_SIZE)
     {
@@ -53,7 +57,7 @@ void receiver_okd(OKDOT_RECEIVER *r)
         // GET_KEY
         char role = qkd_key_type_role_receiver;
         
-        if (strcmp(RECEIVER_STRICT_ROLE, "tx") == 0){
+        if (strcmp(receiver_strict_role, "tx") == 0){
             role = qkd_key_type_role_sender;
         }
         qkd_key_info_t key_info = {qkd_key_type_oblivious, role};
@@ -92,7 +96,7 @@ void receiver_okd(OKDOT_RECEIVER *r)
     {
         for (int d = 0; d < 8; d++)
         {
-            if (strcmp(RECEIVER_STRICT_ROLE, "tx") != 0) bitsArray[i * 8 + d] = !!((r->mem[i] << d) & 0x80);
+            if (strcmp(receiver_strict_role, "tx") != 0) bitsArray[i * 8 + d] = !!((r->mem[i] << d) & 0x80);
             else {
                 if (d % 2 == 0) bitsArray[i * 8 + d] = !!(((r->mem[i] << (d+1)) ^ (r->mem[i] << (d))) & 0x80);
                 else bitsArray[i * 8 + d] = !!((r->mem[i] << (d-1)) & 0x80);
