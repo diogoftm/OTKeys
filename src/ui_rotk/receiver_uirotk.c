@@ -131,6 +131,9 @@ char *receive_key_id_(char *my_ip, unsigned int my_port)
 
 void receiver_okd(OKDOT_RECEIVER *r)
 {
+    char* receiver_strict_role = getenv("RECEIVER_STRICT_ROLE");
+    if (receiver_strict_role == NULL) receiver_strict_role = "";
+    
     if (r->mem == NULL || r->counter >= KEY_MEM_SIZE)
     {
         // Request key to the KMS
@@ -145,7 +148,7 @@ void receiver_okd(OKDOT_RECEIVER *r)
         if (curl)
         {
             char url[256];
-            if(strcmp(RECEIVER_STRICT_ROLE, "tx") == 0){
+            if(strcmp(receiver_strict_role, "tx") == 0){
                 sprintf(url, "https://%s/api/v1/keys/%s/enc_keys?number=1&size=%d&key_type=1", KMS_URI, r->other_player_sai_id, KEY_MEM_SIZE * KEY_LENGTH);
             } else{
                 // Get key id from the other player
@@ -232,7 +235,7 @@ void receiver_okd(OKDOT_RECEIVER *r)
         r->mem = malloc(out_len);
         b64_decode(key_str, (unsigned char *)r->mem, out_len);
 
-        if(strcmp(RECEIVER_STRICT_ROLE, "tx") == 0) send_key_id(key_id, r->other_player_ip, r->other_player_port + r->my_num + 1);
+        if(strcmp(receiver_strict_role, "tx") == 0) send_key_id(key_id, r->other_player_ip, r->other_player_port + r->my_num + 1);
 
         free(chunk.memory);
 
@@ -257,7 +260,7 @@ void receiver_okd(OKDOT_RECEIVER *r)
     {
         for (int d = 0; d < 8; d++)
         {
-            if (strcmp(RECEIVER_STRICT_ROLE, "tx") != 0) bitsArray[i * 8 + d] = !!((r->mem[i] << d) & 0x80);
+            if (strcmp(receiver_strict_role, "tx") != 0) bitsArray[i * 8 + d] = !!((r->mem[i] << d) & 0x80);
             else {
                 if (d % 2 == 0) bitsArray[i * 8 + d] = !!(((r->mem[i] << (d+1)) ^ (r->mem[i] << (d))) & 0x80);
                 else bitsArray[i * 8 + d] = !!((r->mem[i] << (d-1)) & 0x80);

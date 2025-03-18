@@ -132,6 +132,9 @@ void send_key_id(char *key_id, char *other_player_ip, unsigned int other_player_
 void sender_okd(OKDOT_SENDER *s)
 {
     // Get key from the KMS
+    char* sender_strict_role = getenv("SENDER_STRICT_ROLE");
+
+    if (sender_strict_role == NULL) sender_strict_role = "";
 
     if (s->mem == NULL || s->counter >= KEY_MEM_SIZE)
     {
@@ -148,7 +151,7 @@ void sender_okd(OKDOT_SENDER *s)
         if (curl)
         {
             char url[256];
-            if(strcmp(SENDER_STRICT_ROLE, "rx") == 0){
+            if(strcmp(sender_strict_role, "rx") == 0){
                 // Get key id from the other player
                 char *key_id = receive_key_id(s->my_ip, s->my_port + s->other_player + 1);
                 sprintf(url, "https://%s/api/v1/keys/%s/dec_keys?key_ID=%s", KMS_URI, s->other_player_sai_id, key_id);
@@ -234,7 +237,7 @@ void sender_okd(OKDOT_SENDER *s)
         b64_decode(key_str, (unsigned char *)s->mem, out_len);
 
         // Send key id to the other player
-        if(strcmp(SENDER_STRICT_ROLE, "rx") != 0) send_key_id(key_id, s->other_player_ip, s->other_player_port + s->my_num + 1);
+        if(strcmp(sender_strict_role, "rx") != 0) send_key_id(key_id, s->other_player_ip, s->other_player_port + s->my_num + 1);
 
         free(chunk.memory);
 
@@ -259,7 +262,7 @@ void sender_okd(OKDOT_SENDER *s)
     {
         for (int d = 0; d < 8; d++)
         {
-            if (strcmp(SENDER_STRICT_ROLE, "rx") != 0) bitsArray[i * 8 + d] = !!((s->mem[i] << d) & 0x80);
+            if (strcmp(sender_strict_role, "rx") != 0) bitsArray[i * 8 + d] = !!((s->mem[i] << d) & 0x80);
             else {
                 if (d % 2 == 0) bitsArray[i * 8 + d] = !!((s->mem[i] << (d+1)) & 0x80);
                 else bitsArray[i * 8 + d] = !!(((s->mem[i] << d) ^ (s->mem[i] << (d - 1))) & 0x80);
