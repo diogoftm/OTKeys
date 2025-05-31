@@ -131,9 +131,10 @@ char *receive_key_id_(char *my_ip, unsigned int my_port)
 
 void receiver_okd(OKDOT_RECEIVER *r)
 {
-    char* receiver_strict_role = getenv("RECEIVER_STRICT_ROLE");
-    if (receiver_strict_role == NULL) receiver_strict_role = "";
-    
+    char *receiver_strict_role = getenv("RECEIVER_STRICT_ROLE");
+    if (receiver_strict_role == NULL)
+        receiver_strict_role = "";
+
     if (r->mem == NULL || r->counter >= KEY_MEM_SIZE)
     {
         // Request key to the KMS
@@ -148,9 +149,12 @@ void receiver_okd(OKDOT_RECEIVER *r)
         if (curl)
         {
             char url[256];
-            if(strcmp(receiver_strict_role, "tx") == 0){
+            if (strcmp(receiver_strict_role, "tx") == 0)
+            {
                 sprintf(url, "https://%s/api/v1/keys/%s/enc_keys?number=1&size=%d&key_type=1", KMS_URI, r->other_player_sai_id, KEY_MEM_SIZE * KEY_LENGTH);
-            } else{
+            }
+            else
+            {
                 // Get key id from the other player
                 char *key_id = receive_key_id_(r->my_ip, r->my_port + r->other_player + 1);
                 sprintf(url, "https://%s/api/v1/keys/%s/dec_keys?key_ID=%s", KMS_URI, r->other_player_sai_id, key_id);
@@ -235,7 +239,8 @@ void receiver_okd(OKDOT_RECEIVER *r)
         r->mem = malloc(out_len);
         b64_decode(key_str, (unsigned char *)r->mem, out_len);
 
-        if(strcmp(receiver_strict_role, "tx") == 0) send_key_id(key_id, r->other_player_ip, r->other_player_port + r->my_num + 1);
+        if (strcmp(receiver_strict_role, "tx") == 0)
+            send_key_id(key_id, r->other_player_ip, r->other_player_port + r->my_num + 1);
 
         free(chunk.memory);
 
@@ -256,14 +261,18 @@ void receiver_okd(OKDOT_RECEIVER *r)
         bitsArray[i] = 0;
     }
 
-    for (int i = 0; i < KEY_LENGTH/8 - 1; i++)
+    for (int i = 0; i < KEY_LENGTH / 8 - 1; i++)
     {
         for (int d = 0; d < 8; d++)
         {
-            if (strcmp(receiver_strict_role, "tx") != 0) bitsArray[i * 8 + d] = !!((r->mem[i] << d) & 0x80);
-            else {
-                if (d % 2 == 0) bitsArray[i * 8 + d] = !!(((r->mem[i] << (d+1)) ^ (r->mem[i] << (d))) & 0x80);
-                else bitsArray[i * 8 + d] = !!((r->mem[i] << (d-1)) & 0x80);
+            if (strcmp(receiver_strict_role, "tx") != 0)
+                bitsArray[i * 8 + d] = !!((r->mem[i] << d) & 0x80);
+            else
+            {
+                if (d % 2 == 0)
+                    bitsArray[i * 8 + d] = !!(((r->mem[i] << (d + 1)) ^ (r->mem[i] << (d))) & 0x80);
+                else
+                    bitsArray[i * 8 + d] = !!((r->mem[i] << (d - 1)) & 0x80);
             }
         }
     }
@@ -320,7 +329,6 @@ void receiver_indexlist(OKDOT_RECEIVER *r)
     }
 }
 
-
 void receiver_output(OKDOT_RECEIVER *r, unsigned long long int *vb, unsigned int *output)
 {
 
@@ -335,6 +343,6 @@ void receiver_output(OKDOT_RECEIVER *r, unsigned long long int *vb, unsigned int
 
     for (int i = 0; i < KEY_LENGTH / 64; i++)
     {
-        output[i] = (unsigned int)(((vb[i] - (1 - vb[i] % 2)) * input32[i] + (vb[i] - (1 - vb[i] % 2))) >> 32);
+        output[i] = (unsigned int)(((vb[i * 2] * input32[i] + vb[i * 2 + 1]) % PRIME) & 0xFFFFFFFF);
     }
 }

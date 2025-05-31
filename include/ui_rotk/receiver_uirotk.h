@@ -17,6 +17,10 @@
 #define RECEIVER_SAE_KEY "sae.key"
 #endif
 
+#ifndef PRIME
+#define PRIME 0x1fffffffffffffffull
+#endif
+
 #ifdef __cplusplus
 extern "C"
 {
