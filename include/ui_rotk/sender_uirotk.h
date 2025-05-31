@@ -21,6 +21,10 @@
 #define SENDER_SAE_ID ""
 #endif
 
+#ifndef PRIME
+#define PRIME 0x1fffffffffffffffull
+#endif
+
 #ifdef __cplusplus
 extern "C"
 {

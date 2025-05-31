@@ -13,9 +13,10 @@
 
 void receiver_okd(OKDOT_RECEIVER *r)
 {
-    const char* receiver_strict_role = getenv("RECEIVER_STRICT_ROLE");
+    const char *receiver_strict_role = getenv("RECEIVER_STRICT_ROLE");
 
-    if (receiver_strict_role == NULL) receiver_strict_role = "";
+    if (receiver_strict_role == NULL)
+        receiver_strict_role = "";
 
     // Get key from the KMS
     if (r->mem == NULL || r->counter >= KEY_MEM_SIZE)
@@ -56,8 +57,9 @@ void receiver_okd(OKDOT_RECEIVER *r)
 
         // GET_KEY
         char role = qkd_key_type_role_receiver;
-        
-        if (strcmp(receiver_strict_role, "tx") == 0){
+
+        if (strcmp(receiver_strict_role, "tx") == 0)
+        {
             role = qkd_key_type_role_sender;
         }
         qkd_key_info_t key_info = {qkd_key_type_oblivious, role};
@@ -96,10 +98,14 @@ void receiver_okd(OKDOT_RECEIVER *r)
     {
         for (int d = 0; d < 8; d++)
         {
-            if (strcmp(receiver_strict_role, "tx") != 0) bitsArray[i * 8 + d] = !!((r->mem[i] << d) & 0x80);
-            else {
-                if (d % 2 == 0) bitsArray[i * 8 + d] = !!(((r->mem[i] << (d+1)) ^ (r->mem[i] << (d))) & 0x80);
-                else bitsArray[i * 8 + d] = !!((r->mem[i] << (d-1)) & 0x80);
+            if (strcmp(receiver_strict_role, "tx") != 0)
+                bitsArray[i * 8 + d] = !!((r->mem[i] << d) & 0x80);
+            else
+            {
+                if (d % 2 == 0)
+                    bitsArray[i * 8 + d] = !!(((r->mem[i] << (d + 1)) ^ (r->mem[i] << (d))) & 0x80);
+                else
+                    bitsArray[i * 8 + d] = !!((r->mem[i] << (d - 1)) & 0x80);
             }
         }
     }
@@ -170,6 +176,6 @@ void receiver_output(OKDOT_RECEIVER *r, unsigned long long int *vb, unsigned int
 
     for (int i = 0; i < KEY_LENGTH / 64; i++)
     {
-        output[i] = (unsigned int)(((vb[i] - (1 - vb[i] % 2)) * input32[i] + (vb[i] - (1 - vb[i] % 2))) >> 32);
+        output[i] = (unsigned int)(((vb[i * 2] * input32[i] + vb[i * 2 + 1]) % PRIME) & 0xFFFFFFFF);
     }
 }

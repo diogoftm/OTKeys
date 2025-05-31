@@ -15,9 +15,10 @@
 
 void sender_okd(OKDOT_SENDER *s)
 {
-    char* sender_strict_role = getenv("SENDER_STRICT_ROLE");
+    char *sender_strict_role = getenv("SENDER_STRICT_ROLE");
 
-    if (sender_strict_role == NULL) sender_strict_role = "";
+    if (sender_strict_role == NULL)
+        sender_strict_role = "";
 
     // Get key from the KMS
     if (s->mem == NULL || s->counter >= KEY_MEM_SIZE)
@@ -58,8 +59,9 @@ void sender_okd(OKDOT_SENDER *s)
 
         // GET_KEY
         char role = qkd_key_type_role_sender;
-        
-        if (strcmp(sender_strict_role, "rx") == 0){
+
+        if (strcmp(sender_strict_role, "rx") == 0)
+        {
             role = qkd_key_type_role_receiver;
         }
 
@@ -99,10 +101,14 @@ void sender_okd(OKDOT_SENDER *s)
     {
         for (int d = 0; d < 8; d++)
         {
-            if (strcmp(sender_strict_role, "rx") != 0) bitsArray[i * 8 + d] = !!((s->mem[i] << d) & 0x80);
-            else {
-                if (d % 2 == 0) bitsArray[i * 8 + d] = !!((s->mem[i] << (d+1)) & 0x80);
-                else bitsArray[i * 8 + d] = !!(((s->mem[i] << d) ^ (s->mem[i] << (d - 1))) & 0x80);
+            if (strcmp(sender_strict_role, "rx") != 0)
+                bitsArray[i * 8 + d] = !!((s->mem[i] << d) & 0x80);
+            else
+            {
+                if (d % 2 == 0)
+                    bitsArray[i * 8 + d] = !!((s->mem[i] << (d + 1)) & 0x80);
+                else
+                    bitsArray[i * 8 + d] = !!(((s->mem[i] << d) ^ (s->mem[i] << (d - 1))) & 0x80);
             }
         }
     }
@@ -133,7 +139,7 @@ void sender_output(OKDOT_SENDER *s, unsigned long long int *v0, unsigned long lo
 
     for (int i = 0; i < KEY_LENGTH / 64; i++)
     {
-        output[0][i] = (unsigned int)(((v0[i] - (1 - v0[i] % 2)) * input32b[i] + (v0[i] - (1 - v0[i] % 2))) >> 32);
-        output[1][i] = (unsigned int)(((v1[i] - (1 - v1[i] % 2)) * input32b1[i] + (v1[i] - (1 - v1[i] % 2))) >> 32);
+        output[0][i] = (unsigned int)(((v0[i * 2] * input32b[i] + v0[i * 2 + 1]) % PRIME) & 0xFFFFFFFF);
+        output[1][i] = (unsigned int)(((v1[i * 2] * input32b1[i] + v1[i * 2 + 1]) % PRIME) & 0xFFFFFFFF);
     }
 }
