@@ -49,7 +49,7 @@ char *receive_key_id(char *my_ip, unsigned int my_port)
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
         perror("socket failed");
-        exit(EXIT_FAILURE);
+        return;
     }
 
     if (setsockopt(server_fd, SOL_SOCKET,
@@ -57,7 +57,7 @@ char *receive_key_id(char *my_ip, unsigned int my_port)
                    sizeof(opt)))
     {
         perror("setsockopt");
-        exit(EXIT_FAILURE);
+        return;
     }
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = inet_addr(my_ip);
@@ -67,18 +67,18 @@ char *receive_key_id(char *my_ip, unsigned int my_port)
              sizeof(address)) < 0)
     {
         perror("bind failed");
-        exit(EXIT_FAILURE);
+        return;
     }
     if (listen(server_fd, 3) < 0)
     {
         perror("listen");
-        exit(EXIT_FAILURE);
+        return;
     }
     if ((new_socket = accept(server_fd, (struct sockaddr *)&address,
                              &addrlen)) < 0)
     {
         perror("accept");
-        exit(EXIT_FAILURE);
+        return;
     }
 
     valread = read(new_socket, buffer, 1024 - 1);
@@ -86,7 +86,7 @@ char *receive_key_id(char *my_ip, unsigned int my_port)
     {
         perror("read");
         free(buffer);
-        exit(EXIT_FAILURE);
+        return;
     }
 
     buffer[valread] = '\0';
@@ -107,7 +107,7 @@ void send_key_id(char *key_id, char *other_player_ip, unsigned int other_player_
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
         fprintf(stderr, "error: Socket creation error\n");
-        return -1;
+        return;
     }
 
     serv_addr.sin_family = AF_INET;
@@ -116,7 +116,7 @@ void send_key_id(char *key_id, char *other_player_ip, unsigned int other_player_
     if (inet_pton(AF_INET, other_player_ip, &serv_addr.sin_addr) <= 0)
     {
         fprintf(stderr, "error: Invalid address \n");
-        return -1;
+        return;
     }
 
     // Wait until the other player is available
@@ -187,7 +187,7 @@ void sender_okd(OKDOT_SENDER *s)
         if (!root)
         {
             fprintf(stderr, "error: on line %d: %s\n", error.line, error.text);
-            return 1;
+            return;
         }
 
         json_t *keys_array = json_object_get(root, "keys");
@@ -195,7 +195,7 @@ void sender_okd(OKDOT_SENDER *s)
         {
             fprintf(stderr, "error: keys array is empty\n");
             json_decref(root);
-            return 1;
+            return;
         }
 
         json_t *key_obj = json_array_get(keys_array, 0);
@@ -203,7 +203,7 @@ void sender_okd(OKDOT_SENDER *s)
         {
             fprintf(stderr, "error: failed to get key at index 0\n");
             json_decref(root);
-            return 1;
+            return;
         }
 
         json_t *key_value = json_object_get(key_obj, "key");
@@ -211,7 +211,7 @@ void sender_okd(OKDOT_SENDER *s)
         {
             fprintf(stderr, "error: key value is not a string\n");
             json_decref(root);
-            return 1;
+            return;
         }
 
         json_t *key_id_value = json_object_get(key_obj, "key_ID");
@@ -219,7 +219,7 @@ void sender_okd(OKDOT_SENDER *s)
         {
             fprintf(stderr, "error: key_ID value is not a string\n");
             json_decref(root);
-            return 1;
+            return;
         }
 
         const char *key_id = json_string_value(key_id_value);
@@ -230,7 +230,7 @@ void sender_okd(OKDOT_SENDER *s)
         if (key_str == NULL)
         {
             fprintf(stderr, "QOT ERROR: Failed to allocate memory for key.\n");
-            return 1;
+            return;
         }
         memcpy(key_str, key, key_len);
         key_str[key_len] = '\0';
@@ -256,7 +256,7 @@ void sender_okd(OKDOT_SENDER *s)
     if (bitsArray == NULL)
     {
         fprintf(stderr, "Memory allocation failed\n");
-        return 1;
+        return;
     }
 
     for (int i = 0; i < KEY_LENGTH; i++)
