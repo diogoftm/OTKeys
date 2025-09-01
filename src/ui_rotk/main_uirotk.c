@@ -2,6 +2,7 @@
 #include "../../include/ui_rotk/sender_uirotk.h"
 
 #include <pthread.h>
+#include <string.h>
 
 // Note that for this test to run as expected distinct sender and receiver certificates need to be defined
 // and they must match the SAE ids defined bellow.

@@ -43,13 +43,13 @@ void sender_okd(OKDOT_SENDER *s)
             else
             {
                 fprintf(stderr, "Error: Port not found in the input string.\n");
-                return 1;
+                return;
             }
         }
         else
         {
             fprintf(stderr, "Error: Host not found in the input string.\n");
-            return 1;
+            return;
         }
 
         int max_proto_version;
@@ -89,7 +89,7 @@ void sender_okd(OKDOT_SENDER *s)
     if (bitsArray == NULL)
     {
         fprintf(stderr, "Memory allocation failed\n");
-        return 1;
+        return;
     }
 
     for (int i = 0; i < KEY_LENGTH; i++)
