@@ -1,6 +1,7 @@
 #include "../../include/ui_rotk/sender_uirotk.h"
 #include "../../include/ui_rotk/utils.h"
 
+#include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <curl/curl.h>
@@ -9,6 +10,8 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <asm-generic/socket.h>
+#include <netinet/in.h> 
+#include <unistd.h>
 
 struct MemoryStruct
 {
@@ -49,7 +52,7 @@ char *receive_key_id(char *my_ip, unsigned int my_port)
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
         perror("socket failed");
-        return;
+        return NULL;
     }
 
     if (setsockopt(server_fd, SOL_SOCKET,
@@ -57,7 +60,7 @@ char *receive_key_id(char *my_ip, unsigned int my_port)
                    sizeof(opt)))
     {
         perror("setsockopt");
-        return;
+        return NULL;
     }
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = inet_addr(my_ip);
@@ -67,18 +70,18 @@ char *receive_key_id(char *my_ip, unsigned int my_port)
              sizeof(address)) < 0)
     {
         perror("bind failed");
-        return;
+        return NULL;
     }
     if (listen(server_fd, 3) < 0)
     {
         perror("listen");
-        return;
+        return NULL;
     }
     if ((new_socket = accept(server_fd, (struct sockaddr *)&address,
                              &addrlen)) < 0)
     {
         perror("accept");
-        return;
+        return NULL;
     }
 
     valread = read(new_socket, buffer, 1024 - 1);
@@ -86,7 +89,7 @@ char *receive_key_id(char *my_ip, unsigned int my_port)
     {
         perror("read");
         free(buffer);
-        return;
+        return NULL;
     }
 
     buffer[valread] = '\0';
@@ -107,7 +110,6 @@ void send_key_id(char *key_id, char *other_player_ip, unsigned int other_player_
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
         fprintf(stderr, "error: Socket creation error\n");
-        return;
     }
 
     serv_addr.sin_family = AF_INET;
@@ -116,7 +118,6 @@ void send_key_id(char *key_id, char *other_player_ip, unsigned int other_player_
     if (inet_pton(AF_INET, other_player_ip, &serv_addr.sin_addr) <= 0)
     {
         fprintf(stderr, "error: Invalid address \n");
-        return;
     }
 
     // Wait until the other player is available
@@ -187,7 +188,6 @@ void sender_okd(OKDOT_SENDER *s)
         if (!root)
         {
             fprintf(stderr, "error: on line %d: %s\n", error.line, error.text);
-            return;
         }
 
         json_t *keys_array = json_object_get(root, "keys");
@@ -195,7 +195,6 @@ void sender_okd(OKDOT_SENDER *s)
         {
             fprintf(stderr, "error: keys array is empty\n");
             json_decref(root);
-            return;
         }
 
         json_t *key_obj = json_array_get(keys_array, 0);
@@ -203,7 +202,6 @@ void sender_okd(OKDOT_SENDER *s)
         {
             fprintf(stderr, "error: failed to get key at index 0\n");
             json_decref(root);
-            return;
         }
 
         json_t *key_value = json_object_get(key_obj, "key");
@@ -211,7 +209,6 @@ void sender_okd(OKDOT_SENDER *s)
         {
             fprintf(stderr, "error: key value is not a string\n");
             json_decref(root);
-            return;
         }
 
         json_t *key_id_value = json_object_get(key_obj, "key_ID");
@@ -219,7 +216,6 @@ void sender_okd(OKDOT_SENDER *s)
         {
             fprintf(stderr, "error: key_ID value is not a string\n");
             json_decref(root);
-            return;
         }
 
         const char *key_id = json_string_value(key_id_value);
@@ -230,7 +226,6 @@ void sender_okd(OKDOT_SENDER *s)
         if (key_str == NULL)
         {
             fprintf(stderr, "QOT ERROR: Failed to allocate memory for key.\n");
-            return;
         }
         memcpy(key_str, key, key_len);
         key_str[key_len] = '\0';
@@ -256,7 +251,6 @@ void sender_okd(OKDOT_SENDER *s)
     if (bitsArray == NULL)
     {
         fprintf(stderr, "Memory allocation failed\n");
-        return;
     }
 
     for (int i = 0; i < KEY_LENGTH; i++)

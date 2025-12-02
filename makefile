@@ -1,7 +1,15 @@
-CC = /usr/bin/gcc
-CFLAGS = -g -w -O3 -Wall -Wextra -fPIC -DKMS_URI='"$(KMS_URI)"' -DROOT_CA='"$(ROOT_CA)"' -DSENDER_SAE_CRT='"$(SENDER_SAE_CRT)"' -DSENDER_SAE_KEY='"$(SENDER_SAE_KEY)"' -DRECEIVER_SAE_CRT='"$(RECEIVER_SAE_CRT)"' -DRECEIVER_SAE_KEY='"$(RECEIVER_SAE_KEY)"'
-AS = $(CC) $(CFLAGS) -c
+.PHONY: all setup lib libuirotk clean
 
+CC = /usr/bin/gcc
+CFLAGS = -g -w -O3 -Wall -Wextra -fPIC -Iinclude \
+         -DKMS_URI='"$(KMS_URI)"' \
+         -DROOT_CA='"$(ROOT_CA)"' \
+         -DSENDER_SAE_CRT='"$(SENDER_SAE_CRT)"' \
+         -DSENDER_SAE_KEY='"$(SENDER_SAE_KEY)"' \
+         -DRECEIVER_SAE_CRT='"$(RECEIVER_SAE_CRT)"' \
+         -DRECEIVER_SAE_KEY='"$(RECEIVER_SAE_KEY)"'
+
+LDFLAGS = -no-pie -lcrypto -lssl -luuid -lexplain -ljansson -lcurl
 AR = ar
 
 OBJS_UIROTK = obj/sender_uirotk.o obj/receiver_uirotk.o obj/main_uirotk.o obj/utils.o
@@ -11,23 +19,19 @@ all: setup uirotk_test libuirotk
 
 setup:
 	test -d obj || mkdir obj
+	test -d lib || mkdir lib
 
 libuirotk: lib $(OBJS_UIROTK)
 	$(AR) -crs lib/libuirotk.a $(OBJS_UIROTK)
 
-lib:
-	test -d lib || mkdir lib
-
 uirotk_test: $(OBJS_UIROTK)
-	$(CC) -no-pie $(CFLAGS) -o $@ $^ -lcurl -ljansson -lcrypto
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 obj/%_uirotk.o: src/ui_rotk/%_uirotk.c $(DEPS_UIROTK)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 obj/utils.o: src/ui_rotk/utils.c $(DEPS_UIROTK)
 	$(CC) $(CFLAGS) -c -o $@ $<
-
-.PHONY: clean
 
 clean:
 	-rm -f uirotk_test
